@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 
-export async function PUT(request: Request, context?: { params?: { id: string } }) {
-  const params = context?.params;
+export async function PUT(request: Request, context: { params: { id: string } }) {
+  const { params } = context;
   if (!params?.id) {
     return NextResponse.json({ error: 'Missing session id' }, { status: 400 });
   }
@@ -61,8 +61,8 @@ export async function PUT(request: Request, context?: { params?: { id: string } 
   }
 }
 
-export async function DELETE(request: Request, context?: { params?: { id: string } }) {
-  const params = context?.params;
+export async function DELETE(request: Request, context: { params: { id: string } }) {
+  const { params } = context;
   if (!params?.id) {
     return NextResponse.json({ error: 'Missing session id' }, { status: 400 });
   }
