@@ -201,6 +201,35 @@ export default function Home() {
     }
   };
 
+  // Fetch bankroll from DB for authenticated users
+  const fetchBankroll = useCallback(async () => {
+    if (!isGuest && user) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('starting_bankroll, bankroll_goal')
+        .eq('id', user.id)
+        .single();
+      if (!error && data) {
+        setBankroll({
+          starting:
+            data.starting_bankroll !== null && data.starting_bankroll !== undefined
+              ? String(data.starting_bankroll)
+              : '',
+          goal:
+            data.bankroll_goal !== null && data.bankroll_goal !== undefined
+              ? String(data.bankroll_goal)
+              : '',
+        });
+      }
+    }
+  }, [isGuest, user, supabase]);
+
+  useEffect(() => {
+    if (!isGuest && user) {
+      fetchBankroll();
+    }
+  }, [isGuest, user, fetchBankroll]);
+
   useEffect(() => {
     setEditingBankroll(bankroll);
   }, [bankroll]);
@@ -224,7 +253,7 @@ export default function Home() {
         };
         const { error } = await supabase.from('profiles').update(updateObj).eq('id', user.id);
         if (!error) {
-          setBankroll(editingBankroll);
+          await fetchBankroll(); // Refresh bankroll from DB
           setBankrollSaved('success');
           setTimeout(() => setBankrollSaved('idle'), 1200);
         } else {
