@@ -2,6 +2,18 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 
+interface Session {
+  id: string;
+  game_type: string;
+  buy_in: number | null;
+  cash_out: number | null;
+  profit: number | null;
+  location: string;
+  notes: string;
+  date: string;
+  user_id?: string;
+}
+
 export async function GET() {
   try {
     const cookieStore = cookies();
@@ -23,7 +35,7 @@ export async function GET() {
     if (error) throw error;
 
     // Map snake_case to camelCase for frontend compatibility
-    const mappedData = sessions.map((session: any) => ({
+    const mappedData = sessions.map((session: Session) => ({
       id: session.id,
       gameType: session.game_type,
       buyIn: session.buy_in !== null && session.buy_in !== undefined ? Number(session.buy_in) : null,

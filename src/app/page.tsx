@@ -70,13 +70,14 @@ export default function Home() {
 
   useEffect(() => {
     if (!isGuest) fetchSessions();
-  }, [isGuest]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isGuest, fetchSessions]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isGuest) {
       // Save to localStorage
-      let guestSessions = localStorage.getItem('guestSessions');
+      const guestSessions = localStorage.getItem('guestSessions');
       let arr = guestSessions ? JSON.parse(guestSessions) : [];
       if (editingSession) {
         arr = arr.map((s: Session) => s.id === editingSession.id ? { ...editingSession, ...formData, buyIn: Number(formData.buyIn), cashOut: formData.cashOut ? Number(formData.cashOut) : null, profit: formData.cashOut ? Number(formData.cashOut) - Number(formData.buyIn) : null } : s);
@@ -150,7 +151,7 @@ export default function Home() {
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this session?')) {
       if (isGuest) {
-        let arr = sessions.filter(s => s.id !== id);
+        const arr = sessions.filter(s => s.id !== id);
         localStorage.setItem('guestSessions', JSON.stringify(arr));
         setSessions(arr);
         return;
