@@ -634,17 +634,30 @@ export default function Home() {
                       />
                     </div>
                   </div>
-                  <button
-                    onClick={handleBankrollUpdateButton}
-                    disabled={!isBankrollDirty || bankrollSaved === 'saving'}
-                    className={`mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors
-                      ${!isBankrollDirty || bankrollSaved === 'saving' ? 'opacity-60 cursor-not-allowed' : 'hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'}`}
-                    type="button"
-                  >
-                    {bankrollSaved === 'saving' ? 'Saving...' : 'Update'}
-                    {bankrollSaved === 'success' && <CheckCircleIcon className="w-5 h-5 text-green-300" />}
-                    {bankrollSaved === 'error' && <span className="text-red-200 ml-2">Error</span>}
-                  </button>
+                  <div className="flex gap-4 mt-4">
+                    <button
+                      onClick={handleBankrollUpdateButton}
+                      disabled={!isBankrollDirty || bankrollSaved === 'saving'}
+                      className={`flex-1 flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors
+                        ${!isBankrollDirty || bankrollSaved === 'saving' ? 'opacity-60 cursor-not-allowed' : 'hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'}`}
+                      type="button"
+                    >
+                      {bankrollSaved === 'saving' ? 'Saving...' : 'Update'}
+                      {bankrollSaved === 'success' && <CheckCircleIcon className="w-5 h-5 text-green-300" />}
+                      {bankrollSaved === 'error' && <span className="text-red-200 ml-2">Error</span>}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditingBankroll(false);
+                        setEditingBankroll(bankroll);
+                      }}
+                      className="flex-1 flex items-center justify-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-200 transition-colors"
+                      type="button"
+                      disabled={bankrollSaved === 'saving'}
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </>
               ) : (
                 <>
