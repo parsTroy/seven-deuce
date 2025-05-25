@@ -205,22 +205,28 @@ export default function Home() {
   // Fetch bankroll from DB for authenticated users
   const fetchBankroll = useCallback(async () => {
     if (!isGuest && user) {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('starting_bankroll, bankroll_goal')
-        .eq('id', user.id)
-        .single();
-      if (!error && data) {
-        setBankroll({
-          starting:
-            data.starting_bankroll !== null && data.starting_bankroll !== undefined
-              ? String(data.starting_bankroll)
-              : '',
-          goal:
-            data.bankroll_goal !== null && data.bankroll_goal !== undefined
-              ? String(data.bankroll_goal)
-              : '',
-        });
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('starting_bankroll, bankroll_goal')
+          .eq('id', user.id)
+          .single();
+        if (!error && data) {
+          setBankroll({
+            starting:
+              data.starting_bankroll !== null && data.starting_bankroll !== undefined
+                ? String(data.starting_bankroll)
+                : '',
+            goal:
+              data.bankroll_goal !== null && data.bankroll_goal !== undefined
+                ? String(data.bankroll_goal)
+                : '',
+          });
+        } else {
+          console.error('Error fetching bankroll:', error);
+        }
+      } catch (err) {
+        console.error('Exception fetching bankroll:', err);
       }
     }
   }, [isGuest, user, supabase]);
@@ -279,7 +285,10 @@ export default function Home() {
           starting_bankroll: editingBankroll.starting === '' ? null : Number(editingBankroll.starting),
           bankroll_goal: editingBankroll.goal === '' ? null : Number(editingBankroll.goal),
         };
-        const { error } = await supabase.from('profiles').update(updateObj).eq('id', user.id);
+        const { error } = await supabase
+          .from('profiles')
+          .update(updateObj)
+          .eq('id', user.id);
         if (!error) {
           await fetchBankroll(); // Refresh bankroll from DB
           setBankrollSaved('success');
@@ -287,10 +296,12 @@ export default function Home() {
           setIsEditingBankroll(false);
         } else {
           setBankrollSaved('error');
+          console.error('Error updating bankroll:', error);
         }
       }
-    } catch {
+    } catch (err) {
       setBankrollSaved('error');
+      console.error('Exception updating bankroll:', err);
     }
   };
 
