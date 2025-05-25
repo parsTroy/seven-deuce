@@ -733,7 +733,7 @@ export default function Home() {
             </div>
             <button
               onClick={openModal}
-              className="flex flex-col items-center justify-center flex-1 min-h-[100px] max-h-[140px] bg-blue-50 border-2 border-dashed border-blue-300 rounded-2xl shadow-sm hover:bg-blue-100 transition-colors focus:outline-none"
+              className="flex flex-col items-center justify-center flex-1 min-h-[100px] max-h-[150px] bg-blue-50 border-2 border-dashed border-blue-300 rounded-2xl shadow-sm hover:bg-blue-100 transition-colors focus:outline-none"
               aria-label="Add New Session"
               type="button"
             >
