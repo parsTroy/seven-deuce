@@ -672,7 +672,7 @@ export default function Home() {
                         }
                       </span>
                       <span className="text-xs text-gray-500 ml-2">
-                        of {
+                        Goal of {
                           isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
                             ? `$${(getNumber(bankroll.goal) ?? 0).toFixed(2)}`
                             : '--'
