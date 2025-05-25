@@ -428,7 +428,32 @@ export default function Home() {
       {/* Main content, shift right when drawer open */}
       <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 relative transition-transform duration-300 ${mobileMenuOpen ? 'sm:translate-x-0 translate-x-56' : ''}`} style={{ minHeight: '100vh' }}>
         {/* Session Modal */}
-        <Modal isOpen={isModalOpen} onClose={closeModal}>
+        <Modal
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          footer={
+            <div className="flex gap-4 px-2">
+              <button
+                type="submit"
+                form="add-session-form"
+                className="inline-flex justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors w-full"
+                disabled={modalStatus === 'success'}
+              >
+                {editingSession ? 'Update Session' : 'Add Session'}
+              </button>
+              {editingSession && (
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="inline-flex justify-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-200 transition-colors w-full"
+                  disabled={modalStatus === 'success'}
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          }
+        >
           <h2 className="text-xl font-semibold text-gray-900 mb-6">
             {editingSession ? 'Edit Session' : 'Add New Session'}
           </h2>
@@ -444,7 +469,7 @@ export default function Home() {
               <span className="text-red-700 font-semibold">Failed to save session. Please try again.</span>
             </div>
           )}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form id="add-session-form" onSubmit={handleSubmit} className="space-y-6 pb-4 sm:pb-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
@@ -530,25 +555,6 @@ export default function Home() {
                 className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
                 placeholder="Add any notes about the session..."
               />
-            </div>
-            <div className="flex gap-4">
-              <button
-                type="submit"
-                className="inline-flex justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors"
-                disabled={modalStatus === 'success'}
-              >
-                {editingSession ? 'Update Session' : 'Add Session'}
-              </button>
-              {editingSession && (
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="inline-flex justify-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-200 transition-colors"
-                  disabled={modalStatus === 'success'}
-                >
-                  Cancel
-                </button>
-              )}
             </div>
           </form>
         </Modal>
