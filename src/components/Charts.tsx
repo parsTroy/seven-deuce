@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Session } from '@/types/session';
 import {
   Chart as ChartJS,
@@ -28,6 +29,7 @@ interface ChartsProps {
 }
 
 export default function Charts({ sessions }: ChartsProps) {
+  const [activeTab, setActiveTab] = useState<'time' | 'location'>('time');
   // Sort sessions by date
   const sortedSessions = [...sessions].sort((a, b) => 
     new Date(a.date).getTime() - new Date(b.date).getTime()
@@ -103,17 +105,30 @@ export default function Charts({ sessions }: ChartsProps) {
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Profit/Loss Over Time</h3>
-        <div className="h-[300px]">
-          <Line options={chartOptions} data={profitOverTimeData} />
+        <div className="mb-6 flex gap-2 border-b border-gray-200">
+          <button
+            className={`px-4 py-2 text-sm font-semibold rounded-t-lg focus:outline-none transition-colors ${activeTab === 'time' ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-700'}`}
+            onClick={() => setActiveTab('time')}
+          >
+            Profit/Loss Over Time
+          </button>
+          <button
+            className={`px-4 py-2 text-sm font-semibold rounded-t-lg focus:outline-none transition-colors ${activeTab === 'location' ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-700'}`}
+            onClick={() => setActiveTab('location')}
+          >
+            Profit/Loss by Location
+          </button>
         </div>
-      </div>
-
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Profit/Loss by Location</h3>
-        <div className="h-[300px]">
-          <Bar options={chartOptions} data={locationData} />
-        </div>
+        {activeTab === 'time' && (
+          <div className="h-[300px]">
+            <Line options={chartOptions} data={profitOverTimeData} />
+          </div>
+        )}
+        {activeTab === 'location' && (
+          <div className="h-[300px]">
+            <Bar options={chartOptions} data={locationData} />
+          </div>
+        )}
       </div>
     </div>
   );

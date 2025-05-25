@@ -7,6 +7,8 @@ import Charts from '@/components/Charts';
 import { useUser } from '@/context/UserContext';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useGuest } from '@/context/GuestContext';
+import Modal from '@/components/Modal';
+import { PlusIcon } from '@heroicons/react/24/solid';
 
 export default function Home() {
   const { user, loading } = useUser();
@@ -31,6 +33,7 @@ export default function Home() {
     goal: '',
   });
   const [showMigrate, setShowMigrate] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Guest mode: load from localStorage
   useEffect(() => {
@@ -145,6 +148,7 @@ export default function Home() {
       notes: session.notes || '',
       date: new Date(session.date).toISOString().split('T')[0],
     });
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -225,6 +229,20 @@ export default function Home() {
     window.location.href = '/auth';
   };
 
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingSession(null);
+    setFormData({
+      gameType: 'cash',
+      buyIn: '',
+      cashOut: '',
+      location: '',
+      notes: '',
+      date: new Date().toISOString().split('T')[0],
+    });
+  };
+
   if (loading && !isGuest) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
@@ -236,7 +254,118 @@ export default function Home() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 relative">
+      {/* Session Modal */}
+      <Modal isOpen={isModalOpen} onClose={closeModal}>
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          {editingSession ? 'Edit Session' : 'Add New Session'}
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+                Date
+              </label>
+              <input
+                type="date"
+                id="date"
+                name="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="gameType" className="block text-sm font-medium text-gray-700 mb-2">
+                Game Type
+              </label>
+              <select
+                id="gameType"
+                name="gameType"
+                value={formData.gameType}
+                onChange={(e) => setFormData({ ...formData, gameType: e.target.value })}
+                className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm bg-white text-gray-900"
+              >
+                <option value="cash">Cash Game</option>
+                <option value="tournament">Tournament</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+                Location
+              </label>
+              <input
+                type="text"
+                name="location"
+                id="location"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="buyIn" className="block text-sm font-medium text-gray-700 mb-2">
+                Buy In ($)
+              </label>
+              <input
+                type="number"
+                name="buyIn"
+                id="buyIn"
+                value={formData.buyIn}
+                onChange={(e) => setFormData({ ...formData, buyIn: e.target.value })}
+                className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="cashOut" className="block text-sm font-medium text-gray-700 mb-2">
+                Cash Out ($)
+              </label>
+              <input
+                type="number"
+                name="cashOut"
+                id="cashOut"
+                value={formData.cashOut}
+                onChange={(e) => setFormData({ ...formData, cashOut: e.target.value })}
+                className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+              />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
+              Notes
+            </label>
+            <textarea
+              name="notes"
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              rows={3}
+              className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+              placeholder="Add any notes about the session..."
+            />
+          </div>
+          <div className="flex gap-4">
+            <button
+              type="submit"
+              className="inline-flex justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors"
+            >
+              {editingSession ? 'Update Session' : 'Add Session'}
+            </button>
+            {editingSession && (
+              <button
+                type="button"
+                onClick={closeModal}
+                className="inline-flex justify-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        </form>
+      </Modal>
       {showMigrate && (
         <div className="bg-yellow-100 border border-yellow-300 rounded-xl p-4 flex items-center justify-between mb-4">
           <span className="text-yellow-800 font-medium">You have local sessions from guest mode. Migrate them to your account?</span>
@@ -278,10 +407,10 @@ export default function Home() {
 
       <Statistics sessions={sessions} />
       
-      {/* Responsive grid for bankroll, session form, and charts */}
+      {/* Responsive grid for bankroll, add session card, and charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="flex flex-col gap-6 order-2 lg:order-1">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="flex flex-col gap-6 order-2 lg:order-1 h-full">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 min-h-[180px] flex flex-col justify-between">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Bankroll Management</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -310,134 +439,15 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-            <div className="px-6 py-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                {editingSession ? 'Edit Session' : 'Add New Session'}
-              </h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
-                      Date
-                    </label>
-                    <input
-                      type="date"
-                      id="date"
-                      name="date"
-                      value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="gameType" className="block text-sm font-medium text-gray-700 mb-2">
-                      Game Type
-                    </label>
-                    <select
-                      id="gameType"
-                      name="gameType"
-                      value={formData.gameType}
-                      onChange={(e) => setFormData({ ...formData, gameType: e.target.value })}
-                      className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm bg-white text-gray-900"
-                    >
-                      <option value="cash">Cash Game</option>
-                      <option value="tournament">Tournament</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-                      Location
-                    </label>
-                    <input
-                      type="text"
-                      name="location"
-                      id="location"
-                      value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="buyIn" className="block text-sm font-medium text-gray-700 mb-2">
-                      Buy In ($)
-                    </label>
-                    <input
-                      type="number"
-                      name="buyIn"
-                      id="buyIn"
-                      value={formData.buyIn}
-                      onChange={(e) => setFormData({ ...formData, buyIn: e.target.value })}
-                      className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="cashOut" className="block text-sm font-medium text-gray-700 mb-2">
-                      Cash Out ($)
-                    </label>
-                    <input
-                      type="number"
-                      name="cashOut"
-                      id="cashOut"
-                      value={formData.cashOut}
-                      onChange={(e) => setFormData({ ...formData, cashOut: e.target.value })}
-                      className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
-                    Notes
-                  </label>
-                  <textarea
-                    name="notes"
-                    id="notes"
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    rows={3}
-                    className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
-                    placeholder="Add any notes about the session..."
-                  />
-                </div>
-
-                <div className="flex gap-4">
-                  <button
-                    type="submit"
-                    className="inline-flex justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors"
-                  >
-                    {editingSession ? 'Update Session' : 'Add Session'}
-                  </button>
-                  {editingSession && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingSession(null);
-                        setFormData({
-                          gameType: 'cash',
-                          buyIn: '',
-                          cashOut: '',
-                          location: '',
-                          notes: '',
-                          date: new Date().toISOString().split('T')[0],
-                        });
-                      }}
-                      className="inline-flex justify-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-200 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  )}
-                </div>
-              </form>
-            </div>
-          </div>
+          <button
+            onClick={openModal}
+            className="flex flex-col items-center justify-center flex-1 min-h-[180px] bg-blue-50 border-2 border-dashed border-blue-300 rounded-2xl shadow-sm hover:bg-blue-100 transition-colors focus:outline-none"
+            aria-label="Add New Session"
+            type="button"
+          >
+            <PlusIcon className="w-14 h-14 text-blue-500 mb-2" />
+            <span className="text-lg font-semibold text-blue-700">Add New Session</span>
+          </button>
         </div>
         <div className="order-1 lg:order-2">
           <Charts sessions={sessions} />
