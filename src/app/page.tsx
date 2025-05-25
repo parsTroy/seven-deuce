@@ -28,13 +28,13 @@ export default function LandingPage() {
       {/* Poker table vignette */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.18) 60%, transparent 100%)' }} />
       <div className="max-w-lg w-full flex flex-col items-center gap-8 p-10 bg-green-800/90 rounded-full shadow-2xl border-8 border-yellow-400/80 relative z-10" style={{ boxShadow: '0 8px 32px 0 rgba(0,0,0,0.35)' }}>
-        <div className="relative flex items-center gap-3 select-none w-full justify-center my-2" style={{ minHeight: '4.5rem' }}>
+        <div className="relative flex items-center gap-2 sm:gap-3 select-none w-full justify-center my-2" style={{ minHeight: '2.8rem' }}>
           {/* Gold pill banner behind the whole title row */}
-          <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[410px] h-[4.2rem] md:w-[520px] md:h-[4.5rem] rounded-full bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 shadow-lg z-0 border-4 border-yellow-600" style={{ boxShadow: '0 2px 18px 0 #eab30899' }} />
-          <span className="text-5xl font-extrabold text-red-600 drop-shadow-lg z-10">7<span className="text-2xl align-super">♥</span></span>
-          <span className="mx-1 text-4xl font-extrabold text-yellow-900 drop-shadow-lg z-10" style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #eab308' }}>/</span>
-          <span className="text-5xl font-extrabold text-white drop-shadow-lg z-10">2<span className="text-2xl align-super text-black">♠</span></span>
-          <span className="ml-2 text-3xl font-bold text-yellow-900 tracking-tight drop-shadow-lg z-10" style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #eab308' }}>Seven Deuce</span>
+          <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[260px] h-[2.6rem] sm:w-[410px] sm:h-[4.2rem] md:w-[520px] md:h-[4.5rem] rounded-full bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 shadow-lg z-0 border-4 border-yellow-600" style={{ boxShadow: '0 2px 18px 0 #eab30899' }} />
+          <span className="text-lg sm:text-5xl font-extrabold text-red-600 drop-shadow-lg z-10">7<span className="text-xs sm:text-2xl align-super">♥</span></span>
+          <span className="mx-1 text-base sm:text-4xl font-extrabold text-yellow-900 drop-shadow-lg z-10" style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #eab308' }}>/</span>
+          <span className="text-lg sm:text-5xl font-extrabold text-white drop-shadow-lg z-10">2<span className="text-xs sm:text-2xl align-super text-black">♠</span></span>
+          <span className="ml-2 text-lg sm:text-3xl font-bold text-yellow-900 tracking-tight drop-shadow-lg z-10" style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #eab308' }}>Seven Deuce</span>
         </div>
         <h1 className="text-2xl md:text-3xl font-bold text-center text-yellow-100 drop-shadow">Track Your Poker Bankroll. Visualize Your Progress. Crush Your Goals.</h1>
         <div className="flex flex-col gap-3 w-full">
