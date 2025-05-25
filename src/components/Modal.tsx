@@ -22,24 +22,16 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
 
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-      {/* Light overlay, almost transparent, just for focus */}
-      <div
-        className="absolute inset-0 bg-white bg-opacity-10 transition-opacity"
-        onClick={onClose}
-        aria-label="Close modal overlay"
-        style={{ pointerEvents: 'auto' }}
-      />
-      <div
-        className="relative z-10 bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 p-8 animate-popout"
-        style={{ pointerEvents: 'auto' }}
-      >
+    <div className="fixed inset-0 z-50 flex items-center justify-center min-h-screen w-screen" style={{ background: 'radial-gradient(ellipse at center, #26734d 60%, #14532d 100%)' }}>
+      {/* Optional vignette overlay for extra depth */}
+      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.18) 60%, transparent 100%)' }} />
+      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full relative z-10">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 focus:outline-none"
-          aria-label="Close modal"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none"
+          aria-label="Close"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
