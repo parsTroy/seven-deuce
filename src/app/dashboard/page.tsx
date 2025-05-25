@@ -648,7 +648,7 @@ export default function Home() {
                 </>
               ) : (
                 <>
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4 w-full justify-between">
                     <div>
                       <span className="block text-xs text-gray-500">Current Bankroll</span>
                       <span className="text-lg font-semibold text-gray-900">
@@ -658,14 +658,21 @@ export default function Home() {
                             : '--'
                         }
                       </span>
+                      <span className="text-xs text-gray-500 ml-2">
+                        of {
+                          isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
+                            ? `$${(getNumber(bankroll.goal) ?? 0).toFixed(2)}`
+                            : '--'
+                        }
+                      </span>
                     </div>
-                    <span className="text-xs text-gray-500">
-                      of {
-                        isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
-                          ? `$${(getNumber(bankroll.goal) ?? 0).toFixed(2)}`
-                          : '--'
-                      }
-                    </span>
+                    <button
+                      className="px-4 py-2 rounded-xl bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 transition-colors"
+                      onClick={() => setIsEditingBankroll(true)}
+                      type="button"
+                    >
+                      Edit
+                    </button>
                   </div>
                 </>
               )}
