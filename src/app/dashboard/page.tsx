@@ -382,372 +382,376 @@ export default function Home() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 relative">
-      {/* Session Modal */}
-      <Modal isOpen={isModalOpen} onClose={closeModal}>
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">
-          {editingSession ? 'Edit Session' : 'Add New Session'}
-        </h2>
-        {modalStatus === 'success' && (
-          <div className="flex flex-col items-center justify-center gap-2 mb-4">
-            <CheckCircleIcon className="w-12 h-12 text-green-500" />
-            <span className="text-green-700 font-semibold">Session saved successfully!</span>
-          </div>
-        )}
-        {modalStatus === 'error' && (
-          <div className="flex flex-col items-center justify-center gap-2 mb-4">
-            <XCircleIcon className="w-12 h-12 text-red-500" />
-            <span className="text-red-700 font-semibold">Failed to save session. Please try again.</span>
-          </div>
-        )}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="fixed inset-0 w-screen h-screen overflow-auto" style={{ background: 'radial-gradient(ellipse at center, #26734d 60%, #14532d 100%)' }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 relative">
+        {/* Session Modal */}
+        <Modal isOpen={isModalOpen} onClose={closeModal}>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">
+            {editingSession ? 'Edit Session' : 'Add New Session'}
+          </h2>
+          {modalStatus === 'success' && (
+            <div className="flex flex-col items-center justify-center gap-2 mb-4">
+              <CheckCircleIcon className="w-12 h-12 text-green-500" />
+              <span className="text-green-700 font-semibold">Session saved successfully!</span>
+            </div>
+          )}
+          {modalStatus === 'error' && (
+            <div className="flex flex-col items-center justify-center gap-2 mb-4">
+              <XCircleIcon className="w-12 h-12 text-red-500" />
+              <span className="text-red-700 font-semibold">Failed to save session. Please try again.</span>
+            </div>
+          )}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  id="date"
+                  name="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="gameType" className="block text-sm font-medium text-gray-700 mb-2">
+                  Game Type
+                </label>
+                <select
+                  id="gameType"
+                  name="gameType"
+                  value={formData.gameType}
+                  onChange={(e) => setFormData({ ...formData, gameType: e.target.value })}
+                  className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                >
+                  <option value="cash">Cash Game</option>
+                  <option value="tournament">Tournament</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+                  Location
+                </label>
+                <input
+                  type="text"
+                  name="location"
+                  id="location"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="buyIn" className="block text-sm font-medium text-gray-700 mb-2">
+                  Buy In ($)
+                </label>
+                <input
+                  type="number"
+                  name="buyIn"
+                  id="buyIn"
+                  value={formData.buyIn}
+                  onChange={(e) => setFormData({ ...formData, buyIn: e.target.value })}
+                  className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="cashOut" className="block text-sm font-medium text-gray-700 mb-2">
+                  Cash Out ($)
+                </label>
+                <input
+                  type="number"
+                  name="cashOut"
+                  id="cashOut"
+                  value={formData.cashOut}
+                  onChange={(e) => setFormData({ ...formData, cashOut: e.target.value })}
+                  className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+              </div>
+            </div>
             <div>
-              <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
-                Date
+              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
+                Notes
               </label>
-              <input
-                type="date"
-                id="date"
-                name="date"
-                value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              <textarea
+                name="notes"
+                id="notes"
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                rows={3}
                 className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
-                required
+                placeholder="Add any notes about the session..."
               />
             </div>
-            <div>
-              <label htmlFor="gameType" className="block text-sm font-medium text-gray-700 mb-2">
-                Game Type
-              </label>
-              <select
-                id="gameType"
-                name="gameType"
-                value={formData.gameType}
-                onChange={(e) => setFormData({ ...formData, gameType: e.target.value })}
-                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
-              >
-                <option value="cash">Cash Game</option>
-                <option value="tournament">Tournament</option>
-              </select>
-            </div>
-            <div>
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-                Location
-              </label>
-              <input
-                type="text"
-                name="location"
-                id="location"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="buyIn" className="block text-sm font-medium text-gray-700 mb-2">
-                Buy In ($)
-              </label>
-              <input
-                type="number"
-                name="buyIn"
-                id="buyIn"
-                value={formData.buyIn}
-                onChange={(e) => setFormData({ ...formData, buyIn: e.target.value })}
-                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="cashOut" className="block text-sm font-medium text-gray-700 mb-2">
-                Cash Out ($)
-              </label>
-              <input
-                type="number"
-                name="cashOut"
-                id="cashOut"
-                value={formData.cashOut}
-                onChange={(e) => setFormData({ ...formData, cashOut: e.target.value })}
-                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              />
-            </div>
-          </div>
-          <div>
-            <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
-              Notes
-            </label>
-            <textarea
-              name="notes"
-              id="notes"
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              rows={3}
-              className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
-              placeholder="Add any notes about the session..."
-            />
-          </div>
-          <div className="flex gap-4">
-            <button
-              type="submit"
-              className="inline-flex justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors"
-              disabled={modalStatus === 'success'}
-            >
-              {editingSession ? 'Update Session' : 'Add Session'}
-            </button>
-            {editingSession && (
+            <div className="flex gap-4">
               <button
-                type="button"
-                onClick={closeModal}
-                className="inline-flex justify-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-200 transition-colors"
+                type="submit"
+                className="inline-flex justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors"
                 disabled={modalStatus === 'success'}
               >
-                Cancel
+                {editingSession ? 'Update Session' : 'Add Session'}
               </button>
-            )}
-          </div>
-        </form>
-      </Modal>
-      {showMigrate && (
-        <div className="bg-yellow-100 border border-yellow-300 rounded-xl p-4 flex items-center justify-between mb-4">
-          <span className="text-yellow-800 font-medium">You have local sessions from guest mode. Migrate them to your account?</span>
-          <button
-            onClick={handleMigrate}
-            className="ml-4 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
-          >
-            Migrate Data
-          </button>
-          <button
-            onClick={() => { localStorage.removeItem('guestSessions'); setShowMigrate(false); }}
-            className="ml-2 px-4 py-2 rounded-xl bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl font-extrabold text-red-600 select-none">7<span className="text-lg align-super">♥</span></span>
-          <span className="mx-1 text-xl font-extrabold text-gray-700 select-none">/</span>
-          <span className="text-2xl font-extrabold text-gray-900 select-none">2<span className="text-lg align-super text-black">♠</span></span>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight select-none ml-2">Seven Deuce</h1>
-        </div>
-        <div className="flex items-center gap-4">
-          {isGuest ? (
-            <span className="text-gray-700 text-sm">Guest Mode</span>
-          ) : (
-            <span className="text-gray-700 text-sm">{user?.email}</span>
-          )}
-          <button
-            onClick={handleLogout}
-            className="rounded-xl bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300 transition-colors"
-          >
-            Logout
-          </button>
-        </div>
-      </div>
-      <Statistics sessions={sessions} />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="flex flex-col gap-6 order-2 lg:order-1 h-full">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 min-h-[180px] flex flex-col justify-between">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Bankroll Management</h2>
-            {isEditingBankroll ? (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="startingBankroll" className="block text-sm font-medium text-gray-700 mb-2">
-                      Starting Bankroll ($)
-                    </label>
-                    <input
-                      type="number"
-                      id="startingBankroll"
-                      value={editingBankroll.starting}
-                      onChange={(e) => handleBankrollInput('starting', e.target.value)}
-                      className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="bankrollGoal" className="block text-sm font-medium text-gray-700 mb-2">
-                      Bankroll Goal ($)
-                    </label>
-                    <input
-                      type="number"
-                      id="bankrollGoal"
-                      value={editingBankroll.goal}
-                      onChange={(e) => handleBankrollInput('goal', e.target.value)}
-                      className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                  </div>
-                </div>
+              {editingSession && (
                 <button
-                  onClick={handleBankrollUpdateButton}
-                  disabled={!isBankrollDirty || bankrollSaved === 'saving'}
-                  className={`mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors
-                    ${!isBankrollDirty || bankrollSaved === 'saving' ? 'opacity-60 cursor-not-allowed' : 'hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'}`}
                   type="button"
+                  onClick={closeModal}
+                  className="inline-flex justify-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-200 transition-colors"
+                  disabled={modalStatus === 'success'}
                 >
-                  {bankrollSaved === 'saving' ? 'Saving...' : 'Update'}
-                  {bankrollSaved === 'success' && <CheckCircleIcon className="w-5 h-5 text-green-300" />}
-                  {bankrollSaved === 'error' && <span className="text-red-200 ml-2">Error</span>}
+                  Cancel
                 </button>
-              </>
+              )}
+            </div>
+          </form>
+        </Modal>
+        {showMigrate && (
+          <div className="bg-yellow-100 border border-yellow-300 rounded-xl p-4 flex items-center justify-between mb-4">
+            <span className="text-yellow-800 font-medium">You have local sessions from guest mode. Migrate them to your account?</span>
+            <button
+              onClick={handleMigrate}
+              className="ml-4 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
+            >
+              Migrate Data
+            </button>
+            <button
+              onClick={() => { localStorage.removeItem('guestSessions'); setShowMigrate(false); }}
+              className="ml-2 px-4 py-2 rounded-xl bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+        <div className="flex justify-between items-center">
+          <div className="flex w-full my-2">
+            <div className="relative flex items-center gap-3 select-none px-8 py-2 rounded-full bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 shadow-lg border-4 border-yellow-600" style={{ boxShadow: '0 2px 18px 0 #eab30899', minHeight: '3.2rem' }}>
+              <span className="text-2xl font-extrabold text-red-600 drop-shadow-lg">7<span className="text-lg align-super">♥</span></span>
+              <span className="mx-1 text-xl font-extrabold text-yellow-900 drop-shadow-lg" style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #eab308' }}>/</span>
+              <span className="text-2xl font-extrabold text-white drop-shadow-lg">2<span className="text-lg align-super text-black">♠</span></span>
+              <h1 className="ml-2 text-3xl font-bold text-yellow-900 tracking-tight drop-shadow-lg" style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #eab308' }}>Seven Deuce</h1>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            {isGuest ? (
+              <span className="text-gray-700 text-sm">Guest Mode</span>
             ) : (
-              <>
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <span className="block text-sm text-gray-500">Starting Bankroll</span>
-                    <span className="text-lg font-semibold text-gray-900">
-                      {isValueSet(bankroll.starting) ? `$${getNumber(bankroll.starting)?.toFixed(2)}` : '--'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="block text-sm text-gray-500">Bankroll Goal</span>
-                    <span className="text-lg font-semibold text-gray-900">
-                      {isValueSet(bankroll.goal) ? `$${getNumber(bankroll.goal)?.toFixed(2)}` : '--'}
-                    </span>
+              <span className="text-gray-700 text-sm">{user?.email}</span>
+            )}
+            <button
+              onClick={handleLogout}
+              className="rounded-xl bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300 transition-colors"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+        <Statistics sessions={sessions} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="flex flex-col gap-6 order-2 lg:order-1 h-full">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 min-h-[180px] flex flex-col justify-between">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Bankroll Management</h2>
+              {isEditingBankroll ? (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="startingBankroll" className="block text-sm font-medium text-gray-700 mb-2">
+                        Starting Bankroll ($)
+                      </label>
+                      <input
+                        type="number"
+                        id="startingBankroll"
+                        value={editingBankroll.starting}
+                        onChange={(e) => handleBankrollInput('starting', e.target.value)}
+                        className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="bankrollGoal" className="block text-sm font-medium text-gray-700 mb-2">
+                        Bankroll Goal ($)
+                      </label>
+                      <input
+                        type="number"
+                        id="bankrollGoal"
+                        value={editingBankroll.goal}
+                        onChange={(e) => handleBankrollInput('goal', e.target.value)}
+                        className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                    </div>
                   </div>
                   <button
-                    className="ml-4 px-4 py-2 rounded-xl bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 transition-colors"
-                    onClick={() => setIsEditingBankroll(true)}
+                    onClick={handleBankrollUpdateButton}
+                    disabled={!isBankrollDirty || bankrollSaved === 'saving'}
+                    className={`mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors
+                      ${!isBankrollDirty || bankrollSaved === 'saving' ? 'opacity-60 cursor-not-allowed' : 'hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'}`}
                     type="button"
                   >
-                    Edit
+                    {bankrollSaved === 'saving' ? 'Saving...' : 'Update'}
+                    {bankrollSaved === 'success' && <CheckCircleIcon className="w-5 h-5 text-green-300" />}
+                    {bankrollSaved === 'error' && <span className="text-red-200 ml-2">Error</span>}
                   </button>
-                </div>
-              </>
-            )}
-            <div className="mt-6">
-              <div className="flex items-end justify-between mb-1">
-                <span className="text-lg font-semibold text-gray-900">
-                  {
-                    isValueSet(bankroll.starting) && isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
-                      ? `$${(((getNumber(bankroll.starting) ?? 0) + (sessions.reduce((sum, s) => sum + (s.profit || 0), 0)))).toFixed(2)}`
-                      : '--'
-                  }
-                </span>
-                <span className="text-xs text-gray-500">
-                  of {
-                    isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
-                      ? `$${(getNumber(bankroll.goal) ?? 0).toFixed(2)}`
-                      : '--'
-                  }
-                </span>
-              </div>
-              <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  className="h-3 bg-orange-400 rounded-full transition-all"
-                  style={{
-                    width:
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <span className="block text-sm text-gray-500">Starting Bankroll</span>
+                      <span className="text-lg font-semibold text-gray-900">
+                        {isValueSet(bankroll.starting) ? `$${getNumber(bankroll.starting)?.toFixed(2)}` : '--'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="block text-sm text-gray-500">Bankroll Goal</span>
+                      <span className="text-lg font-semibold text-gray-900">
+                        {isValueSet(bankroll.goal) ? `$${getNumber(bankroll.goal)?.toFixed(2)}` : '--'}
+                      </span>
+                    </div>
+                    <button
+                      className="ml-4 px-4 py-2 rounded-xl bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 transition-colors"
+                      onClick={() => setIsEditingBankroll(true)}
+                      type="button"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </>
+              )}
+              <div className="mt-6">
+                <div className="flex items-end justify-between mb-1">
+                  <span className="text-lg font-semibold text-gray-900">
+                    {
                       isValueSet(bankroll.starting) && isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
-                        ? `${Math.min(
-                            100,
-                            Math.max(
-                              0,
-                              (
-                                (((getNumber(bankroll.starting) ?? 0) + sessions.reduce((sum, s) => sum + (s.profit || 0), 0)) - (getNumber(bankroll.starting) ?? 0)) /
-                                ((getNumber(bankroll.goal) ?? 1) - (getNumber(bankroll.starting) ?? 0))
-                              ) * 100
-                            )
-                          )}%`
-                        : '0%'
-                  }}
-                ></div>
+                        ? `$${(((getNumber(bankroll.starting) ?? 0) + (sessions.reduce((sum, s) => sum + (s.profit || 0), 0)))).toFixed(2)}`
+                        : '--'
+                    }
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    of {
+                      isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
+                        ? `$${(getNumber(bankroll.goal) ?? 0).toFixed(2)}`
+                        : '--'
+                    }
+                  </span>
+                </div>
+                <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-3 bg-orange-400 rounded-full transition-all"
+                    style={{
+                      width:
+                        isValueSet(bankroll.starting) && isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
+                          ? `${Math.min(
+                              100,
+                              Math.max(
+                                0,
+                                (
+                                  (((getNumber(bankroll.starting) ?? 0) + sessions.reduce((sum, s) => sum + (s.profit || 0), 0)) - (getNumber(bankroll.starting) ?? 0)) /
+                                  ((getNumber(bankroll.goal) ?? 1) - (getNumber(bankroll.starting) ?? 0))
+                                ) * 100
+                              )
+                            )}%`
+                          : '0%'
+                    }}
+                  ></div>
+                </div>
               </div>
             </div>
+            <button
+              onClick={openModal}
+              className="flex flex-col items-center justify-center flex-1 min-h-[180px] bg-blue-50 border-2 border-dashed border-blue-300 rounded-2xl shadow-sm hover:bg-blue-100 transition-colors focus:outline-none"
+              aria-label="Add New Session"
+              type="button"
+            >
+              <PlusIcon className="w-14 h-14 text-blue-500 mb-2" />
+              <span className="text-lg font-semibold text-blue-700">Add New Session</span>
+            </button>
           </div>
-          <button
-            onClick={openModal}
-            className="flex flex-col items-center justify-center flex-1 min-h-[180px] bg-blue-50 border-2 border-dashed border-blue-300 rounded-2xl shadow-sm hover:bg-blue-100 transition-colors focus:outline-none"
-            aria-label="Add New Session"
-            type="button"
-          >
-            <PlusIcon className="w-14 h-14 text-blue-500 mb-2" />
-            <span className="text-lg font-semibold text-blue-700">Add New Session</span>
-          </button>
+          <div className="order-1 lg:order-2 h-[480px] flex flex-col">
+            <Charts sessions={sessions} />
+          </div>
         </div>
-        <div className="order-1 lg:order-2 h-[480px] flex flex-col">
-          <Charts sessions={sessions} />
-        </div>
-      </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-        <div className="px-6 py-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Sessions</h2>
-            <div className="flex gap-4">
-              <input
-                type="date"
-                value={dateRange.start}
-                onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
-              />
-              <input
-                type="date"
-                value={dateRange.end}
-                onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
-              />
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+          <div className="px-6 py-8">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">Sessions</h2>
+              <div className="flex gap-4">
+                <input
+                  type="date"
+                  value={dateRange.start}
+                  onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                  className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                />
+                <input
+                  type="date"
+                  value={dateRange.end}
+                  onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                  className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                />
+              </div>
             </div>
-          </div>
-          <div className="overflow-x-auto">
-            {filteredSessions.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No sessions recorded yet.</p>
-            ) : (
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Buy In</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cash Out</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profit</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {filteredSessions.map((session) => (
-                    <tr key={session.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(session.date).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {session.gameType === 'cash' ? 'Cash Game' : 'Tournament'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${session.buyIn}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {session.cashOut ? `$${session.cashOut}` : '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className={`${session.profit && session.profit > 0 ? 'text-green-600' : session.profit && session.profit < 0 ? 'text-red-600' : 'text-gray-900'}`}>
-                          {session.profit ? `$${session.profit}` : '-'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {session.location}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <div className="flex gap-4">
-                          <button
-                            onClick={() => handleEdit(session)}
-                            className="text-blue-600 hover:text-blue-800 transition-colors"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(session.id)}
-                            className="text-red-600 hover:text-red-800 transition-colors"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
+            <div className="overflow-x-auto">
+              {filteredSessions.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No sessions recorded yet.</p>
+              ) : (
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead>
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Buy In</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cash Out</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profit</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {filteredSessions.map((session) => (
+                      <tr key={session.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(session.date).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {session.gameType === 'cash' ? 'Cash Game' : 'Tournament'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          ${session.buyIn}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {session.cashOut ? `$${session.cashOut}` : '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <span className={`${session.profit && session.profit > 0 ? 'text-green-600' : session.profit && session.profit < 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                            {session.profit ? `$${session.profit}` : '-'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {session.location}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <div className="flex gap-4">
+                            <button
+                              onClick={() => handleEdit(session)}
+                              className="text-blue-600 hover:text-blue-800 transition-colors"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(session.id)}
+                              className="text-red-600 hover:text-red-800 transition-colors"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
         </div>
       </div>
