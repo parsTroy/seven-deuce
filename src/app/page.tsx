@@ -438,6 +438,36 @@ export default function Home() {
                 />
               </div>
             </div>
+            {/* Progress Bar */}
+            <div className="mt-6">
+              <div className="flex items-end justify-between mb-1">
+                <span className="text-lg font-semibold text-gray-900">
+                  ${bankroll.starting && bankroll.goal ? (Number(bankroll.starting) + (sessions.reduce((sum, s) => sum + (s.profit || 0), 0))).toFixed(2) : '--'}
+                </span>
+                <span className="text-xs text-gray-500">
+                  of ${bankroll.goal || '--'}
+                </span>
+              </div>
+              <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-3 bg-orange-400 rounded-full transition-all"
+                  style={{
+                    width: bankroll.starting && bankroll.goal
+                      ? `${Math.min(
+                          100,
+                          Math.max(
+                            0,
+                            (
+                              ((Number(bankroll.starting) + sessions.reduce((sum, s) => sum + (s.profit || 0), 0)) - Number(bankroll.starting)) /
+                              (Number(bankroll.goal) - Number(bankroll.starting))
+                            ) * 100
+                          )
+                        )}%`
+                      : '0%'
+                  }}
+                ></div>
+              </div>
+            </div>
           </div>
           <button
             onClick={openModal}

@@ -28,31 +28,37 @@ interface ChartsProps {
   sessions: Session[];
 }
 
+function getDateRangeLabel(sessions: Session[]) {
+  if (!sessions.length) return '';
+  const sorted = [...sessions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const start = new Date(sorted[0].date).toLocaleDateString();
+  const end = new Date(sorted[sorted.length - 1].date).toLocaleDateString();
+  return start === end ? start : `${start} - ${end}`;
+}
+
 export default function Charts({ sessions }: ChartsProps) {
   const [activeTab, setActiveTab] = useState<'time' | 'location'>('time');
-  // Sort sessions by date
-  const sortedSessions = [...sessions].sort((a, b) => 
-    new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
+  const sortedSessions = [...sessions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const dateRangeLabel = getDateRangeLabel(sortedSessions);
 
-  // Prepare data for profit over time chart
+  // Profit/Loss over time
   const profitOverTimeData = {
-    labels: sortedSessions.map(session => 
-      new Date(session.date).toLocaleDateString()
-    ),
+    labels: sortedSessions.map(session => new Date(session.date).toLocaleDateString()),
     datasets: [
       {
         label: 'Profit/Loss',
         data: sortedSessions.map(session => session.profit || 0),
-        borderColor: 'rgb(59, 130, 246)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        borderColor: '#6366f1',
+        backgroundColor: 'rgba(99, 102, 241, 0.08)',
         tension: 0.4,
         fill: true,
+        pointRadius: 4,
+        pointBackgroundColor: '#6366f1',
       },
     ],
   };
 
-  // Prepare data for profit by location chart
+  // Profit by location
   const profitByLocation = sessions.reduce((acc, session) => {
     acc[session.location] = (acc[session.location] || 0) + (session.profit || 0);
     return acc;
@@ -64,13 +70,10 @@ export default function Charts({ sessions }: ChartsProps) {
       {
         label: 'Profit/Loss by Location',
         data: Object.values(profitByLocation),
-        backgroundColor: Object.values(profitByLocation).map(value => 
-          value >= 0 ? 'rgba(34, 197, 94, 0.5)' : 'rgba(239, 68, 68, 0.5)'
-        ),
-        borderColor: Object.values(profitByLocation).map(value => 
-          value >= 0 ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)'
-        ),
-        borderWidth: 1,
+        backgroundColor: Object.values(profitByLocation).map(value => value >= 0 ? '#34d399' : '#f87171'),
+        borderRadius: 6,
+        barPercentage: 0.6,
+        categoryPercentage: 0.6,
       },
     ],
   };
@@ -78,57 +81,97 @@ export default function Charts({ sessions }: ChartsProps) {
   const chartOptions = {
     responsive: true,
     plugins: {
-      legend: {
-        position: 'top' as const,
-        labels: {
-          font: {
-            size: 12,
-            family: "'Inter', sans-serif",
-          },
-        },
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#fff',
+        titleColor: '#111',
+        bodyColor: '#111',
+        borderColor: '#e5e7eb',
+        borderWidth: 1,
+        padding: 12,
       },
     },
     scales: {
       y: {
-        grid: {
-          color: 'rgba(0, 0, 0, 0.05)',
-        },
+        grid: { color: 'rgba(0,0,0,0.04)' },
+        ticks: { color: '#6b7280', font: { size: 13 } },
       },
       x: {
-        grid: {
-          display: false,
-        },
+        grid: { display: false },
+        ticks: { color: '#6b7280', font: { size: 13 } },
       },
     },
   };
 
+  // Calculate total profit and percent change (if possible)
+  const totalProfit = sortedSessions.reduce((sum, s) => sum + (s.profit || 0), 0);
+  let percentChange = null;
+  if (sortedSessions.length > 1) {
+    const prev = sortedSessions[sortedSessions.length - 2].profit || 0;
+    const curr = sortedSessions[sortedSessions.length - 1].profit || 0;
+    if (prev !== 0) {
+      percentChange = ((curr - prev) / Math.abs(prev)) * 100;
+    }
+  }
+
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <div className="mb-6 flex gap-2 border-b border-gray-200">
-          <button
-            className={`px-4 py-2 text-sm font-semibold rounded-t-lg focus:outline-none transition-colors ${activeTab === 'time' ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-700'}`}
-            onClick={() => setActiveTab('time')}
-          >
-            Profit/Loss Over Time
-          </button>
-          <button
-            className={`px-4 py-2 text-sm font-semibold rounded-t-lg focus:outline-none transition-colors ${activeTab === 'location' ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-700'}`}
-            onClick={() => setActiveTab('location')}
-          >
-            Profit/Loss by Location
-          </button>
+      <div className="bg-white rounded-2xl shadow-md p-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2 gap-2">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">{activeTab === 'time' ? 'Profit/Loss Over Time' : 'Profit/Loss by Location'}</h3>
+            <div className="text-xs text-gray-500">{dateRangeLabel}</div>
+          </div>
+          <div className="flex items-center gap-4 mt-2 md:mt-0">
+            <div className="text-2xl font-bold text-gray-900">${totalProfit.toFixed(2)}</div>
+            {percentChange !== null && (
+              <span className={`text-sm font-semibold ${percentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>{percentChange >= 0 ? '+' : ''}{percentChange.toFixed(1)}%</span>
+            )}
+            {/* Tabs */}
+            <div className="ml-4 flex gap-1 bg-gray-100 rounded-lg p-1">
+              <button
+                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeTab === 'time' ? 'bg-white text-blue-700 shadow' : 'text-gray-500 hover:text-blue-700'}`}
+                onClick={() => setActiveTab('time')}
+              >
+                Over Time
+              </button>
+              <button
+                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeTab === 'location' ? 'bg-white text-blue-700 shadow' : 'text-gray-500 hover:text-blue-700'}`}
+                onClick={() => setActiveTab('location')}
+              >
+                By Location
+              </button>
+            </div>
+          </div>
         </div>
-        {activeTab === 'time' && (
-          <div className="h-[300px]">
+        <div className="h-[240px] w-full">
+          {activeTab === 'time' ? (
             <Line options={chartOptions} data={profitOverTimeData} />
-          </div>
-        )}
-        {activeTab === 'location' && (
-          <div className="h-[300px]">
+          ) : (
             <Bar options={chartOptions} data={locationData} />
-          </div>
-        )}
+          )}
+        </div>
+        {/* Legend */}
+        <div className="flex items-center gap-4 mt-4">
+          {activeTab === 'time' && (
+            <div className="flex items-center gap-2">
+              <span className="inline-block w-3 h-3 rounded-full bg-indigo-500" />
+              <span className="text-xs text-gray-600">Profit/Loss</span>
+            </div>
+          )}
+          {activeTab === 'location' && (
+            <>
+              <div className="flex items-center gap-2">
+                <span className="inline-block w-3 h-3 rounded-full bg-green-400" />
+                <span className="text-xs text-gray-600">Profit (Location)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-block w-3 h-3 rounded-full bg-red-400" />
+                <span className="text-xs text-gray-600">Loss (Location)</span>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
