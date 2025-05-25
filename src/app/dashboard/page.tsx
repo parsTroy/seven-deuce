@@ -235,8 +235,26 @@ export default function Home() {
     setEditingBankroll(bankroll);
   }, [bankroll]);
 
+  // Helper to check if a bankroll value is set (not empty, null, or undefined)
+  const isValueSet = (val: string | undefined) => {
+    return val !== undefined && val !== null && val !== '' && !isNaN(Number(val));
+  };
+
+  // Helper to parse bankroll values safely
+  const getNumber = (val: string | undefined) => {
+    if (!isValueSet(val)) return null;
+    const n = Number(val);
+    return isNaN(n) ? null : n;
+  };
+
+  // Set edit mode if bankroll is not set or both are zero
   useEffect(() => {
-    if ((bankroll.starting === '' && bankroll.goal === '') || (bankroll.starting === undefined && bankroll.goal === undefined)) {
+    const starting = getNumber(bankroll.starting);
+    const goal = getNumber(bankroll.goal);
+    if (
+      (!isValueSet(bankroll.starting) && !isValueSet(bankroll.goal)) ||
+      (starting === 0 && goal === 0)
+    ) {
       setIsEditingBankroll(true);
     } else {
       setIsEditingBankroll(false);
@@ -277,12 +295,6 @@ export default function Home() {
   };
 
   const isBankrollDirty = editingBankroll.starting !== bankroll.starting || editingBankroll.goal !== bankroll.goal;
-
-  // Helper to parse bankroll values safely
-  const getNumber = (val: string | undefined) => {
-    const n = Number(val);
-    return isNaN(n) ? 0 : n;
-  };
 
   const handleMigrate = async () => {
     const guestSessions = localStorage.getItem('guestSessions');
@@ -573,11 +585,15 @@ export default function Home() {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <span className="block text-sm text-gray-500">Starting Bankroll</span>
-                    <span className="text-lg font-semibold text-gray-900">${getNumber(bankroll.starting).toFixed(2)}</span>
+                    <span className="text-lg font-semibold text-gray-900">
+                      {isValueSet(bankroll.starting) ? `$${getNumber(bankroll.starting)?.toFixed(2)}` : '--'}
+                    </span>
                   </div>
                   <div>
                     <span className="block text-sm text-gray-500">Bankroll Goal</span>
-                    <span className="text-lg font-semibold text-gray-900">${getNumber(bankroll.goal).toFixed(2)}</span>
+                    <span className="text-lg font-semibold text-gray-900">
+                      {isValueSet(bankroll.goal) ? `$${getNumber(bankroll.goal)?.toFixed(2)}` : '--'}
+                    </span>
                   </div>
                   <button
                     className="ml-4 px-4 py-2 rounded-xl bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 transition-colors"
@@ -592,14 +608,18 @@ export default function Home() {
             <div className="mt-6">
               <div className="flex items-end justify-between mb-1">
                 <span className="text-lg font-semibold text-gray-900">
-                  ${
-                    getNumber(bankroll.starting) && getNumber(bankroll.goal)
-                      ? (getNumber(bankroll.starting) + (sessions.reduce((sum, s) => sum + (s.profit || 0), 0))).toFixed(2)
+                  {
+                    isValueSet(bankroll.starting) && isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
+                      ? `$${(((getNumber(bankroll.starting) ?? 0) + (sessions.reduce((sum, s) => sum + (s.profit || 0), 0)))).toFixed(2)}`
                       : '--'
                   }
                 </span>
                 <span className="text-xs text-gray-500">
-                  of ${getNumber(bankroll.goal) ? getNumber(bankroll.goal).toFixed(2) : '--'}
+                  of {
+                    isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
+                      ? `$${(getNumber(bankroll.goal) ?? 0).toFixed(2)}`
+                      : '--'
+                  }
                 </span>
               </div>
               <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
@@ -607,14 +627,14 @@ export default function Home() {
                   className="h-3 bg-orange-400 rounded-full transition-all"
                   style={{
                     width:
-                      getNumber(bankroll.starting) && getNumber(bankroll.goal) && getNumber(bankroll.goal) !== getNumber(bankroll.starting)
+                      isValueSet(bankroll.starting) && isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
                         ? `${Math.min(
                             100,
                             Math.max(
                               0,
                               (
-                                ((getNumber(bankroll.starting) + sessions.reduce((sum, s) => sum + (s.profit || 0), 0)) - getNumber(bankroll.starting)) /
-                                (getNumber(bankroll.goal) - getNumber(bankroll.starting))
+                                (((getNumber(bankroll.starting) ?? 0) + sessions.reduce((sum, s) => sum + (s.profit || 0), 0)) - (getNumber(bankroll.starting) ?? 0)) /
+                                ((getNumber(bankroll.goal) ?? 1) - (getNumber(bankroll.starting) ?? 0))
                               ) * 100
                             )
                           )}%`
