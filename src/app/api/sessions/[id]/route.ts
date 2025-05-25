@@ -2,15 +2,12 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: Request, context: { params: { id: string } }) {
+  const { params } = context;
   try {
     const cookieStore = cookies();
     const supabase = await createClient(cookieStore);
     const body = await request.json();
-
     const {
       data: { user },
       error: userError,
@@ -61,10 +58,8 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: Request, context: { params: { id: string } }) {
+  const { params } = context;
   try {
     const cookieStore = cookies();
     const supabase = await createClient(cookieStore);

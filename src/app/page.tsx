@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Session } from '@/types/session';
 import Statistics from '@/components/Statistics';
 import Charts from '@/components/Charts';
@@ -49,7 +49,7 @@ export default function Home() {
     }
   }, [isGuest, user]);
 
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     if (isGuest) return; // skip fetch in guest mode
     try {
       const response = await fetch('/api/sessions');
@@ -66,11 +66,10 @@ export default function Home() {
       console.error('Error fetching sessions:', error);
       setSessions([]);
     }
-  };
+  }, [isGuest]);
 
   useEffect(() => {
     if (!isGuest) fetchSessions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isGuest, fetchSessions]);
 
   const handleSubmit = async (e: React.FormEvent) => {
