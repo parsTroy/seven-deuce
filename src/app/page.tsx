@@ -8,7 +8,7 @@ import { useUser } from '@/context/UserContext';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useGuest } from '@/context/GuestContext';
 import Modal from '@/components/Modal';
-import { PlusIcon } from '@heroicons/react/24/solid';
+import { PlusIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 
 export default function Home() {
   const { user, loading } = useUser();
@@ -34,6 +34,7 @@ export default function Home() {
   });
   const [showMigrate, setShowMigrate] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalStatus, setModalStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   // Guest mode: load from localStorage
   useEffect(() => {
@@ -77,6 +78,7 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setModalStatus('idle');
     if (isGuest) {
       // Save to localStorage
       const guestSessions = localStorage.getItem('guestSessions');
@@ -106,6 +108,11 @@ export default function Home() {
         date: new Date().toISOString().split('T')[0],
       });
       setEditingSession(null);
+      setModalStatus('success');
+      setTimeout(() => {
+        setModalStatus('idle');
+        setIsModalOpen(false);
+      }, 1500);
       return;
     }
     // Auth mode
@@ -132,9 +139,16 @@ export default function Home() {
           date: new Date().toISOString().split('T')[0],
         });
         setEditingSession(null);
+        setModalStatus('success');
+        setTimeout(() => {
+          setModalStatus('idle');
+          setIsModalOpen(false);
+        }, 1500);
+      } else {
+        setModalStatus('error');
       }
     } catch (error) {
-      console.error('Error saving session:', error);
+      setModalStatus('error');
     }
   };
 
@@ -260,6 +274,18 @@ export default function Home() {
         <h2 className="text-xl font-semibold text-gray-900 mb-6">
           {editingSession ? 'Edit Session' : 'Add New Session'}
         </h2>
+        {modalStatus === 'success' && (
+          <div className="flex flex-col items-center justify-center gap-2 mb-4">
+            <CheckCircleIcon className="w-12 h-12 text-green-500" />
+            <span className="text-green-700 font-semibold">Session saved successfully!</span>
+          </div>
+        )}
+        {modalStatus === 'error' && (
+          <div className="flex flex-col items-center justify-center gap-2 mb-4">
+            <XCircleIcon className="w-12 h-12 text-red-500" />
+            <span className="text-red-700 font-semibold">Failed to save session. Please try again.</span>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -351,6 +377,7 @@ export default function Home() {
             <button
               type="submit"
               className="inline-flex justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors"
+              disabled={modalStatus === 'success'}
             >
               {editingSession ? 'Update Session' : 'Add Session'}
             </button>
@@ -359,6 +386,7 @@ export default function Home() {
                 type="button"
                 onClick={closeModal}
                 className="inline-flex justify-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-200 transition-colors"
+                disabled={modalStatus === 'success'}
               >
                 Cancel
               </button>
