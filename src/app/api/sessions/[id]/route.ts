@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 
-// NOTE: Using 'any' for context to avoid Next.js/Vercel type mismatch errors.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function PUT(request: Request, { params }: any) {
   if (!params?.id) {
     return NextResponse.json({ error: 'Missing session id' }, { status: 400 });
@@ -61,6 +61,7 @@ export async function PUT(request: Request, { params }: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function DELETE(request: Request, { params }: any) {
   if (!params?.id) {
     return NextResponse.json({ error: 'Missing session id' }, { status: 400 });
