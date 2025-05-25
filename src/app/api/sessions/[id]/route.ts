@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 
-export async function PUT(request: Request, context: { params: { id: string } }) {
-  const { params } = context;
+// NOTE: Using 'any' for context to avoid Next.js/Vercel type mismatch errors.
+export async function PUT(request: Request, { params }: any) {
   if (!params?.id) {
     return NextResponse.json({ error: 'Missing session id' }, { status: 400 });
   }
@@ -61,8 +61,7 @@ export async function PUT(request: Request, context: { params: { id: string } })
   }
 }
 
-export async function DELETE(request: Request, context: { params: { id: string } }) {
-  const { params } = context;
+export async function DELETE(request: Request, { params }: any) {
   if (!params?.id) {
     return NextResponse.json({ error: 'Missing session id' }, { status: 400 });
   }
