@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { createClient } from '@/utils/supabase/server';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function PUT(request: Request, { params }: any) {
@@ -8,8 +8,7 @@ export async function PUT(request: Request, { params }: any) {
     return NextResponse.json({ error: 'Missing session id' }, { status: 400 });
   }
   try {
-    const cookieStore = cookies();
-    const supabase = await createClient(cookieStore);
+    const supabase = createRouteHandlerClient({ cookies });
     const body = await request.json();
     const {
       data: { user },
@@ -67,9 +66,7 @@ export async function DELETE(request: Request, { params }: any) {
     return NextResponse.json({ error: 'Missing session id' }, { status: 400 });
   }
   try {
-    const cookieStore = cookies();
-    const supabase = await createClient(cookieStore);
-
+    const supabase = createRouteHandlerClient({ cookies });
     const {
       data: { user },
       error: userError,
