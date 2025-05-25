@@ -1,103 +1,531 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Session } from '@/types/session';
+import Statistics from '@/components/Statistics';
+import Charts from '@/components/Charts';
+import { useUser } from '@/context/UserContext';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useGuest } from '@/context/GuestContext';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { user, loading } = useUser();
+  const { isGuest, setGuest } = useGuest();
+  const supabase = createClientComponentClient();
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [formData, setFormData] = useState({
+    gameType: 'cash',
+    buyIn: '',
+    cashOut: '',
+    location: '',
+    notes: '',
+    date: new Date().toISOString().split('T')[0],
+  });
+  const [editingSession, setEditingSession] = useState<Session | null>(null);
+  const [dateRange, setDateRange] = useState({
+    start: '',
+    end: '',
+  });
+  const [bankroll, setBankroll] = useState({
+    starting: '',
+    goal: '',
+  });
+  const [showMigrate, setShowMigrate] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  // Guest mode: load from localStorage
+  useEffect(() => {
+    if (isGuest) {
+      const localSessions = localStorage.getItem('guestSessions');
+      setSessions(localSessions ? JSON.parse(localSessions) : []);
+      const savedBankroll = localStorage.getItem('bankroll');
+      if (savedBankroll) setBankroll(JSON.parse(savedBankroll));
+    }
+  }, [isGuest]);
+
+  // Auth mode: migrate guest data if present
+  useEffect(() => {
+    if (!isGuest && user && localStorage.getItem('guestSessions')) {
+      setShowMigrate(true);
+    }
+  }, [isGuest, user]);
+
+  const fetchSessions = async () => {
+    if (isGuest) return; // skip fetch in guest mode
+    try {
+      const response = await fetch('/api/sessions');
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setSessions(data);
+      } else {
+        setSessions([]);
+        if (data.error) {
+          console.error('API error:', data.error);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching sessions:', error);
+      setSessions([]);
+    }
+  };
+
+  useEffect(() => {
+    if (!isGuest) fetchSessions();
+  }, [isGuest]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isGuest) {
+      // Save to localStorage
+      let guestSessions = localStorage.getItem('guestSessions');
+      let arr = guestSessions ? JSON.parse(guestSessions) : [];
+      if (editingSession) {
+        arr = arr.map((s: Session) => s.id === editingSession.id ? { ...editingSession, ...formData, buyIn: Number(formData.buyIn), cashOut: formData.cashOut ? Number(formData.cashOut) : null, profit: formData.cashOut ? Number(formData.cashOut) - Number(formData.buyIn) : null } : s);
+      } else {
+        arr.push({
+          id: Date.now().toString(),
+          gameType: formData.gameType,
+          buyIn: Number(formData.buyIn),
+          cashOut: formData.cashOut ? Number(formData.cashOut) : null,
+          profit: formData.cashOut ? Number(formData.cashOut) - Number(formData.buyIn) : null,
+          location: formData.location,
+          notes: formData.notes,
+          date: formData.date,
+        });
+      }
+      localStorage.setItem('guestSessions', JSON.stringify(arr));
+      setSessions(arr);
+      setFormData({
+        gameType: 'cash',
+        buyIn: '',
+        cashOut: '',
+        location: '',
+        notes: '',
+        date: new Date().toISOString().split('T')[0],
+      });
+      setEditingSession(null);
+      return;
+    }
+    // Auth mode
+    try {
+      const url = editingSession 
+        ? `/api/sessions/${editingSession.id}`
+        : '/api/sessions';
+      const method = editingSession ? 'PUT' : 'POST';
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      if (response.ok) {
+        await fetchSessions();
+        setFormData({
+          gameType: 'cash',
+          buyIn: '',
+          cashOut: '',
+          location: '',
+          notes: '',
+          date: new Date().toISOString().split('T')[0],
+        });
+        setEditingSession(null);
+      }
+    } catch (error) {
+      console.error('Error saving session:', error);
+    }
+  };
+
+  const handleEdit = (session: Session) => {
+    setEditingSession(session);
+    setFormData({
+      gameType: session.gameType,
+      buyIn: session.buyIn.toString(),
+      cashOut: session.cashOut?.toString() || '',
+      location: session.location,
+      notes: session.notes || '',
+      date: new Date(session.date).toISOString().split('T')[0],
+    });
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this session?')) {
+      if (isGuest) {
+        let arr = sessions.filter(s => s.id !== id);
+        localStorage.setItem('guestSessions', JSON.stringify(arr));
+        setSessions(arr);
+        return;
+      }
+      try {
+        const response = await fetch(`/api/sessions/${id}`, {
+          method: 'DELETE',
+        });
+        if (response.ok) {
+          await fetchSessions();
+        }
+      } catch (error) {
+        console.error('Error deleting session:', error);
+      }
+    }
+  };
+
+  const handleBankrollUpdate = (field: 'starting' | 'goal', value: string) => {
+    const newBankroll = { ...bankroll, [field]: value };
+    setBankroll(newBankroll);
+    localStorage.setItem('bankroll', JSON.stringify(newBankroll));
+  };
+
+  // Migrate guest data to Supabase after login
+  const handleMigrate = async () => {
+    const guestSessions = localStorage.getItem('guestSessions');
+    if (guestSessions && user) {
+      const arr = JSON.parse(guestSessions);
+      for (const s of arr) {
+        await fetch('/api/sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            gameType: s.gameType,
+            buyIn: s.buyIn,
+            cashOut: s.cashOut,
+            location: s.location,
+            notes: s.notes,
+            date: s.date,
+          }),
+        });
+      }
+      localStorage.removeItem('guestSessions');
+      setShowMigrate(false);
+      setGuest(false);
+      fetchSessions();
+    }
+  };
+
+  const filteredSessions = Array.isArray(sessions) ? sessions.filter(session => {
+    if (!dateRange.start && !dateRange.end) return true;
+    const sessionDate = new Date(session.date);
+    const start = dateRange.start ? new Date(dateRange.start) : null;
+    const end = dateRange.end ? new Date(dateRange.end) : null;
+    if (start && end) {
+      return sessionDate >= start && sessionDate <= end;
+    } else if (start) {
+      return sessionDate >= start;
+    } else if (end) {
+      return sessionDate <= end;
+    }
+    return true;
+  }) : [];
+
+  const handleLogout = async () => {
+    if (isGuest) {
+      setGuest(false);
+      window.location.href = '/auth';
+      return;
+    }
+    await supabase.auth.signOut();
+    window.location.href = '/auth';
+  };
+
+  if (loading && !isGuest) {
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  }
+  if (!user && !isGuest) {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/auth';
+    }
+    return null;
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      {showMigrate && (
+        <div className="bg-yellow-100 border border-yellow-300 rounded-xl p-4 flex items-center justify-between mb-4">
+          <span className="text-yellow-800 font-medium">You have local sessions from guest mode. Migrate them to your account?</span>
+          <button
+            onClick={handleMigrate}
+            className="ml-4 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Migrate Data
+          </button>
+          <button
+            onClick={() => { localStorage.removeItem('guestSessions'); setShowMigrate(false); }}
+            className="ml-2 px-4 py-2 rounded-xl bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
           >
-            Read our docs
-          </a>
+            Dismiss
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      )}
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl font-extrabold text-red-600 select-none">7<span className="text-lg align-super">♥</span></span>
+          <span className="mx-1 text-xl font-extrabold text-gray-700 select-none">/</span>
+          <span className="text-2xl font-extrabold text-gray-900 select-none">2<span className="text-lg align-super text-black">♠</span></span>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight select-none ml-2">Seven Deuce</h1>
+        </div>
+        <div className="flex items-center gap-4">
+          {isGuest ? (
+            <span className="text-gray-700 text-sm">Guest Mode</span>
+          ) : (
+            <span className="text-gray-700 text-sm">{user?.email}</span>
+          )}
+          <button
+            onClick={handleLogout}
+            className="rounded-xl bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300 transition-colors"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <Statistics sessions={sessions} />
+      
+      {/* Responsive grid for bankroll, session form, and charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="flex flex-col gap-6 order-2 lg:order-1">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Bankroll Management</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="startingBankroll" className="block text-sm font-medium text-gray-700 mb-2">
+                  Starting Bankroll ($)
+                </label>
+                <input
+                  type="number"
+                  id="startingBankroll"
+                  value={bankroll.starting}
+                  onChange={(e) => handleBankrollUpdate('starting', e.target.value)}
+                  className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+              </div>
+              <div>
+                <label htmlFor="bankrollGoal" className="block text-sm font-medium text-gray-700 mb-2">
+                  Bankroll Goal ($)
+                </label>
+                <input
+                  type="number"
+                  id="bankrollGoal"
+                  value={bankroll.goal}
+                  onChange={(e) => handleBankrollUpdate('goal', e.target.value)}
+                  className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+            <div className="px-6 py-8">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                {editingSession ? 'Edit Session' : 'Add New Session'}
+              </h2>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+                      Date
+                    </label>
+                    <input
+                      type="date"
+                      id="date"
+                      name="date"
+                      value={formData.date}
+                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                      className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="gameType" className="block text-sm font-medium text-gray-700 mb-2">
+                      Game Type
+                    </label>
+                    <select
+                      id="gameType"
+                      name="gameType"
+                      value={formData.gameType}
+                      onChange={(e) => setFormData({ ...formData, gameType: e.target.value })}
+                      className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm bg-white text-gray-900"
+                    >
+                      <option value="cash">Cash Game</option>
+                      <option value="tournament">Tournament</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+                      Location
+                    </label>
+                    <input
+                      type="text"
+                      name="location"
+                      id="location"
+                      value={formData.location}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="buyIn" className="block text-sm font-medium text-gray-700 mb-2">
+                      Buy In ($)
+                    </label>
+                    <input
+                      type="number"
+                      name="buyIn"
+                      id="buyIn"
+                      value={formData.buyIn}
+                      onChange={(e) => setFormData({ ...formData, buyIn: e.target.value })}
+                      className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="cashOut" className="block text-sm font-medium text-gray-700 mb-2">
+                      Cash Out ($)
+                    </label>
+                    <input
+                      type="number"
+                      name="cashOut"
+                      id="cashOut"
+                      value={formData.cashOut}
+                      onChange={(e) => setFormData({ ...formData, cashOut: e.target.value })}
+                      className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
+                    Notes
+                  </label>
+                  <textarea
+                    name="notes"
+                    id="notes"
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    rows={3}
+                    className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+                    placeholder="Add any notes about the session..."
+                  />
+                </div>
+
+                <div className="flex gap-4">
+                  <button
+                    type="submit"
+                    className="inline-flex justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors"
+                  >
+                    {editingSession ? 'Update Session' : 'Add Session'}
+                  </button>
+                  {editingSession && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingSession(null);
+                        setFormData({
+                          gameType: 'cash',
+                          buyIn: '',
+                          cashOut: '',
+                          location: '',
+                          notes: '',
+                          date: new Date().toISOString().split('T')[0],
+                        });
+                      }}
+                      className="inline-flex justify-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-200 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div className="order-1 lg:order-2">
+          <Charts sessions={sessions} />
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+        <div className="px-6 py-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Sessions</h2>
+            <div className="flex gap-4">
+              <input
+                type="date"
+                value={dateRange.start}
+                onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                className="rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+              />
+              <input
+                type="date"
+                value={dateRange.end}
+                onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                className="rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+              />
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            {filteredSessions.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">No sessions recorded yet.</p>
+            ) : (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead>
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Buy In</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cash Out</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profit</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredSessions.map((session) => (
+                    <tr key={session.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {new Date(session.date).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {session.gameType === 'cash' ? 'Cash Game' : 'Tournament'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${session.buyIn}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {session.cashOut ? `$${session.cashOut}` : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className={`${session.profit && session.profit > 0 ? 'text-green-600' : session.profit && session.profit < 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                          {session.profit ? `$${session.profit}` : '-'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {session.location}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <div className="flex gap-4">
+                          <button
+                            onClick={() => handleEdit(session)}
+                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(session.id)}
+                            className="text-red-600 hover:text-red-800 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
