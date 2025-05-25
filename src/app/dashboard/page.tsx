@@ -660,15 +660,15 @@ export default function Home() {
             </div>
             <button
               onClick={openModal}
-              className="flex flex-col items-center justify-center flex-1 min-h-[180px] bg-blue-50 border-2 border-dashed border-blue-300 rounded-2xl shadow-sm hover:bg-blue-100 transition-colors focus:outline-none"
+              className="flex flex-col items-center justify-center flex-1 min-h-[100px] max-h-[100px] bg-blue-50 border-2 border-dashed border-blue-300 rounded-2xl shadow-sm hover:bg-blue-100 transition-colors focus:outline-none"
               aria-label="Add New Session"
               type="button"
             >
               <PlusIcon className="w-14 h-14 text-blue-500 mb-2" />
-              <span className="text-lg font-semibold text-blue-700">Add New Session</span>
+              <span className="text-md font-semibold text-blue-700">Add New Session</span>
             </button>
           </div>
-          <div className="order-1 lg:order-2 h-[480px] flex flex-col">
+          <div className="order-1 lg:order-2 h-[400px] flex flex-col">
             <Charts sessions={sessions} />
           </div>
         </div>
