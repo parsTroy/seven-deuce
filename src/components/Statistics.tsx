@@ -57,20 +57,8 @@ export default function Statistics({ sessions }: StatisticsProps) {
         <dl className="space-y-2">
           <div>
             <dt className="text-xs font-medium text-gray-500">Total Profit/Loss</dt>
-            <dd className={`text-lg font-semibold ${stats.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <dd className={`text-3xl font-semibold ${stats.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               ${stats.totalProfit.toFixed(2)}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs font-medium text-gray-500">Current Bankroll</dt>
-            <dd className="text-lg font-semibold text-gray-900">
-              {stats.currentBankroll ? `$${stats.currentBankroll.toFixed(2)}` : 'N/A'}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs font-medium text-gray-500">Progress to Goal</dt>
-            <dd className="text-lg font-semibold text-gray-900">
-              {stats.progressToGoal ? `${Math.min(100, Math.max(0, stats.progressToGoal)).toFixed(1)}%` : 'N/A'}
             </dd>
           </div>
         </dl>
