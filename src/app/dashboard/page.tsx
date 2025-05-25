@@ -7,7 +7,7 @@ import { useUser } from '@/context/UserContext';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useGuest } from '@/context/GuestContext';
 import Modal from '@/components/Modal';
-import { PlusIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
+import { PlusIcon, CheckCircleIcon, XCircleIcon, Bars3Icon } from '@heroicons/react/24/solid';
 
 export default function Home() {
   const { user, loading } = useUser();
@@ -37,6 +37,7 @@ export default function Home() {
   const [editingBankroll, setEditingBankroll] = useState({ starting: '', goal: '' });
   const [bankrollSaved, setBankrollSaved] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [isEditingBankroll, setIsEditingBankroll] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (isGuest) {
@@ -371,6 +372,19 @@ export default function Home() {
     });
   };
 
+  // Close drawer on outside click
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      const drawer = document.getElementById('mobile-drawer');
+      if (drawer && !drawer.contains(e.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [mobileMenuOpen]);
+
   if (loading && !isGuest) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
@@ -383,7 +397,36 @@ export default function Home() {
 
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-auto" style={{ background: 'radial-gradient(ellipse at center, #26734d 60%, #14532d 100%)' }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 relative">
+      {/* Mobile drawer overlay */}
+      <div className={`sm:hidden fixed inset-0 z-50 transition-all duration-300 ${mobileMenuOpen ? 'bg-black/40 pointer-events-auto' : 'pointer-events-none bg-transparent'}`}></div>
+      {/* Mobile drawer */}
+      <div id="mobile-drawer" className={`sm:hidden fixed top-0 left-0 h-full w-64 bg-white z-50 shadow-2xl border-r border-gray-200 transition-transform duration-300 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{ willChange: 'transform' }}>
+        <div className="flex flex-col gap-4 p-6 pt-8">
+          <button
+            className="self-end mb-2 p-2 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Close menu"
+            type="button"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7 text-yellow-900">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          {isGuest ? (
+            <span className="text-gray-700 text-base">Guest Mode</span>
+          ) : (
+            <span className="text-gray-700 text-base">{user?.email}</span>
+          )}
+          <button
+            onClick={handleLogout}
+            className="rounded-xl bg-gray-200 px-4 py-2 text-base font-semibold text-gray-700 hover:bg-gray-300 transition-colors w-full"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+      {/* Main content, shift right when drawer open */}
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 relative transition-transform duration-300 ${mobileMenuOpen ? 'sm:translate-x-0 translate-x-56' : ''}`} style={{ minHeight: '100vh' }}>
         {/* Session Modal */}
         <Modal isOpen={isModalOpen} onClose={closeModal}>
           <h2 className="text-xl font-semibold text-gray-900 mb-6">
@@ -526,16 +569,25 @@ export default function Home() {
             </button>
           </div>
         )}
-        <div className="flex justify-between items-center">
-          <div className="flex w-full my-2">
-            <div className="relative flex items-center gap-3 select-none px-8 py-2 rounded-full bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 shadow-lg border-4 border-yellow-600" style={{ boxShadow: '0 2px 18px 0 #eab30899', minHeight: '3.2rem' }}>
-              <span className="text-2xl font-extrabold text-red-600 drop-shadow-lg">7<span className="text-lg align-super">♥</span></span>
-              <span className="mx-1 text-xl font-extrabold text-yellow-900 drop-shadow-lg" style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #eab308' }}>/</span>
-              <span className="text-2xl font-extrabold text-white drop-shadow-lg">2<span className="text-lg align-super text-black">♠</span></span>
-              <h1 className="ml-2 text-3xl font-bold text-yellow-900 tracking-tight drop-shadow-lg" style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #eab308' }}>Seven Deuce</h1>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 w-full">
+          <div className="flex w-full my-2 sm:my-0">
+            <div className="relative flex items-center gap-2 select-none px-4 py-1 sm:px-8 sm:py-2 rounded-full bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 shadow-lg border-4 border-yellow-600 mx-auto sm:mx-0" style={{ boxShadow: '0 2px 18px 0 #eab30899', minHeight: '2.2rem' }}>
+              <span className="text-lg sm:text-2xl font-extrabold text-red-600 drop-shadow-lg">7<span className="text-xs sm:text-lg align-super">♥</span></span>
+              <span className="mx-1 text-base sm:text-xl font-extrabold text-yellow-900 drop-shadow-lg" style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #eab308' }}>/</span>
+              <span className="text-lg sm:text-2xl font-extrabold text-white drop-shadow-lg">2<span className="text-xs sm:text-lg align-super text-black">♠</span></span>
+              <h1 className="ml-2 text-xl sm:text-3xl font-bold text-yellow-900 tracking-tight drop-shadow-lg" style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #eab308' }}>Seven Deuce</h1>
             </div>
+            {/* Hamburger menu for mobile */}
+            <button
+              className="sm:hidden ml-2 p-2 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              aria-label="Open menu"
+              type="button"
+            >
+              <Bars3Icon className="w-7 h-7 text-yellow-900" />
+            </button>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="hidden sm:flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
             {isGuest ? (
               <span className="text-gray-700 text-sm">Guest Mode</span>
             ) : (
@@ -543,7 +595,7 @@ export default function Home() {
             )}
             <button
               onClick={handleLogout}
-              className="rounded-xl bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300 transition-colors"
+              className="rounded-xl bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300 transition-colors w-full sm:w-auto"
             >
               Logout
             </button>
@@ -664,7 +716,7 @@ export default function Home() {
               aria-label="Add New Session"
               type="button"
             >
-              <PlusIcon className="w-14 h-14 text-blue-500 mb-2" />
+              <PlusIcon className="w-8 h-8 text-blue-500 mb-2" />
               <span className="text-md font-semibold text-blue-700">Add New Session</span>
             </button>
           </div>
@@ -676,18 +728,18 @@ export default function Home() {
           <div className="px-6 py-8">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold text-gray-900">Sessions</h2>
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
                 <input
                   type="date"
                   value={dateRange.start}
                   onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                  className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                  className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition w-full sm:w-auto"
                 />
                 <input
                   type="date"
                   value={dateRange.end}
                   onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                  className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                  className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition w-full sm:w-auto"
                 />
               </div>
             </div>
