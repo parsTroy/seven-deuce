@@ -36,6 +36,7 @@ export default function Home() {
   const [modalStatus, setModalStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [editingBankroll, setEditingBankroll] = useState({ starting: '', goal: '' });
   const [bankrollSaved, setBankrollSaved] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
+  const [isEditingBankroll, setIsEditingBankroll] = useState(false);
 
   useEffect(() => {
     if (isGuest) {
@@ -234,6 +235,14 @@ export default function Home() {
     setEditingBankroll(bankroll);
   }, [bankroll]);
 
+  useEffect(() => {
+    if ((bankroll.starting === '' && bankroll.goal === '') || (bankroll.starting === undefined && bankroll.goal === undefined)) {
+      setIsEditingBankroll(true);
+    } else {
+      setIsEditingBankroll(false);
+    }
+  }, [bankroll.starting, bankroll.goal]);
+
   const handleBankrollInput = (field: 'starting' | 'goal', value: string) => {
     setEditingBankroll((prev) => ({ ...prev, [field]: value }));
   };
@@ -246,6 +255,7 @@ export default function Home() {
         setBankroll(editingBankroll);
         setBankrollSaved('success');
         setTimeout(() => setBankrollSaved('idle'), 1200);
+        setIsEditingBankroll(false);
       } else if (user) {
         const updateObj = {
           starting_bankroll: editingBankroll.starting === '' ? null : Number(editingBankroll.starting),
@@ -256,6 +266,7 @@ export default function Home() {
           await fetchBankroll(); // Refresh bankroll from DB
           setBankrollSaved('success');
           setTimeout(() => setBankrollSaved('idle'), 1200);
+          setIsEditingBankroll(false);
         } else {
           setBankrollSaved('error');
         }
@@ -266,6 +277,12 @@ export default function Home() {
   };
 
   const isBankrollDirty = editingBankroll.starting !== bankroll.starting || editingBankroll.goal !== bankroll.goal;
+
+  // Helper to parse bankroll values safely
+  const getNumber = (val: string | undefined) => {
+    const n = Number(val);
+    return isNaN(n) ? 0 : n;
+  };
 
   const handleMigrate = async () => {
     const guestSessions = localStorage.getItem('guestSessions');
@@ -511,68 +528,97 @@ export default function Home() {
         <div className="flex flex-col gap-6 order-2 lg:order-1 h-full">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 min-h-[180px] flex flex-col justify-between">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Bankroll Management</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="startingBankroll" className="block text-sm font-medium text-gray-700 mb-2">
-                  Starting Bankroll ($)
-                </label>
-                <input
-                  type="number"
-                  id="startingBankroll"
-                  value={editingBankroll.starting}
-                  onChange={(e) => handleBankrollInput('starting', e.target.value)}
-                  className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
-              </div>
-              <div>
-                <label htmlFor="bankrollGoal" className="block text-sm font-medium text-gray-700 mb-2">
-                  Bankroll Goal ($)
-                </label>
-                <input
-                  type="number"
-                  id="bankrollGoal"
-                  value={editingBankroll.goal}
-                  onChange={(e) => handleBankrollInput('goal', e.target.value)}
-                  className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
-              </div>
-            </div>
-            <button
-              onClick={handleBankrollUpdateButton}
-              disabled={!isBankrollDirty || bankrollSaved === 'saving'}
-              className={`mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors
-                ${!isBankrollDirty || bankrollSaved === 'saving' ? 'opacity-60 cursor-not-allowed' : 'hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'}`}
-              type="button"
-            >
-              {bankrollSaved === 'saving' ? 'Saving...' : 'Update'}
-              {bankrollSaved === 'success' && <CheckCircleIcon className="w-5 h-5 text-green-300" />}
-              {bankrollSaved === 'error' && <span className="text-red-200 ml-2">Error</span>}
-            </button>
+            {isEditingBankroll ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label htmlFor="startingBankroll" className="block text-sm font-medium text-gray-700 mb-2">
+                      Starting Bankroll ($)
+                    </label>
+                    <input
+                      type="number"
+                      id="startingBankroll"
+                      value={editingBankroll.starting}
+                      onChange={(e) => handleBankrollInput('starting', e.target.value)}
+                      className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="bankrollGoal" className="block text-sm font-medium text-gray-700 mb-2">
+                      Bankroll Goal ($)
+                    </label>
+                    <input
+                      type="number"
+                      id="bankrollGoal"
+                      value={editingBankroll.goal}
+                      onChange={(e) => handleBankrollInput('goal', e.target.value)}
+                      className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={handleBankrollUpdateButton}
+                  disabled={!isBankrollDirty || bankrollSaved === 'saving'}
+                  className={`mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors
+                    ${!isBankrollDirty || bankrollSaved === 'saving' ? 'opacity-60 cursor-not-allowed' : 'hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'}`}
+                  type="button"
+                >
+                  {bankrollSaved === 'saving' ? 'Saving...' : 'Update'}
+                  {bankrollSaved === 'success' && <CheckCircleIcon className="w-5 h-5 text-green-300" />}
+                  {bankrollSaved === 'error' && <span className="text-red-200 ml-2">Error</span>}
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <span className="block text-sm text-gray-500">Starting Bankroll</span>
+                    <span className="text-lg font-semibold text-gray-900">${getNumber(bankroll.starting).toFixed(2)}</span>
+                  </div>
+                  <div>
+                    <span className="block text-sm text-gray-500">Bankroll Goal</span>
+                    <span className="text-lg font-semibold text-gray-900">${getNumber(bankroll.goal).toFixed(2)}</span>
+                  </div>
+                  <button
+                    className="ml-4 px-4 py-2 rounded-xl bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 transition-colors"
+                    onClick={() => setIsEditingBankroll(true)}
+                    type="button"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </>
+            )}
             <div className="mt-6">
               <div className="flex items-end justify-between mb-1">
                 <span className="text-lg font-semibold text-gray-900">
-                  ${bankroll.starting && bankroll.goal ? (Number(bankroll.starting) + (sessions.reduce((sum, s) => sum + (s.profit || 0), 0))).toFixed(2) : '--'}
+                  ${
+                    getNumber(bankroll.starting) && getNumber(bankroll.goal)
+                      ? (getNumber(bankroll.starting) + (sessions.reduce((sum, s) => sum + (s.profit || 0), 0))).toFixed(2)
+                      : '--'
+                  }
                 </span>
                 <span className="text-xs text-gray-500">
-                  of ${bankroll.goal || '--'}
+                  of ${getNumber(bankroll.goal) ? getNumber(bankroll.goal).toFixed(2) : '--'}
                 </span>
               </div>
               <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
                 <div
                   className="h-3 bg-orange-400 rounded-full transition-all"
                   style={{
-                    width: bankroll.starting && bankroll.goal
-                      ? `${Math.min(
-                          100,
-                          Math.max(
-                            0,
-                            (
-                              ((Number(bankroll.starting) + sessions.reduce((sum, s) => sum + (s.profit || 0), 0)) - Number(bankroll.starting)) /
-                              (Number(bankroll.goal) - Number(bankroll.starting))
-                            ) * 100
-                          )
-                        )}%`
-                      : '0%'
+                    width:
+                      getNumber(bankroll.starting) && getNumber(bankroll.goal) && getNumber(bankroll.goal) !== getNumber(bankroll.starting)
+                        ? `${Math.min(
+                            100,
+                            Math.max(
+                              0,
+                              (
+                                ((getNumber(bankroll.starting) + sessions.reduce((sum, s) => sum + (s.profit || 0), 0)) - getNumber(bankroll.starting)) /
+                                (getNumber(bankroll.goal) - getNumber(bankroll.starting))
+                              ) * 100
+                            )
+                          )}%`
+                        : '0%'
                   }}
                 ></div>
               </div>
