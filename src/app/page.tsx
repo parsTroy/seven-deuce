@@ -298,7 +298,7 @@ export default function Home() {
                 name="date"
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
                 required
               />
             </div>
@@ -311,7 +311,7 @@ export default function Home() {
                 name="gameType"
                 value={formData.gameType}
                 onChange={(e) => setFormData({ ...formData, gameType: e.target.value })}
-                className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm bg-white text-gray-900"
+                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
               >
                 <option value="cash">Cash Game</option>
                 <option value="tournament">Tournament</option>
@@ -327,7 +327,7 @@ export default function Home() {
                 id="location"
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
                 required
               />
             </div>
@@ -341,7 +341,7 @@ export default function Home() {
                 id="buyIn"
                 value={formData.buyIn}
                 onChange={(e) => setFormData({ ...formData, buyIn: e.target.value })}
-                className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
                 required
               />
             </div>
@@ -355,7 +355,7 @@ export default function Home() {
                 id="cashOut"
                 value={formData.cashOut}
                 onChange={(e) => setFormData({ ...formData, cashOut: e.target.value })}
-                className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
               />
             </div>
           </div>
@@ -369,7 +369,7 @@ export default function Home() {
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={3}
-              className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+              className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
               placeholder="Add any notes about the session..."
             />
           </div>
@@ -450,7 +450,7 @@ export default function Home() {
                   id="startingBankroll"
                   value={bankroll.starting}
                   onChange={(e) => handleBankrollUpdate('starting', e.target.value)}
-                  className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
                 />
               </div>
               <div>
@@ -462,7 +462,7 @@ export default function Home() {
                   id="bankrollGoal"
                   value={bankroll.goal}
                   onChange={(e) => handleBankrollUpdate('goal', e.target.value)}
-                  className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
                 />
               </div>
             </div>
@@ -521,13 +521,13 @@ export default function Home() {
                 type="date"
                 value={dateRange.start}
                 onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                className="rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+                className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
               />
               <input
                 type="date"
                 value={dateRange.end}
                 onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                className="rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900"
+                className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
               />
             </div>
           </div>
