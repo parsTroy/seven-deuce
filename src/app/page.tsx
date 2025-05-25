@@ -53,6 +53,25 @@ export default function Home() {
     }
   }, [isGuest, user]);
 
+  // Fetch bankroll from Supabase on login
+  useEffect(() => {
+    if (!isGuest && user) {
+      (async () => {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('starting_bankroll, bankroll_goal')
+          .eq('id', user.id)
+          .single();
+        if (!error && data) {
+          setBankroll({
+            starting: data.starting_bankroll !== null && data.starting_bankroll !== undefined ? String(data.starting_bankroll) : '',
+            goal: data.bankroll_goal !== null && data.bankroll_goal !== undefined ? String(data.bankroll_goal) : '',
+          });
+        }
+      })();
+    }
+  }, [isGuest, user, supabase]);
+
   const fetchSessions = useCallback(async () => {
     if (isGuest) return; // skip fetch in guest mode
     try {
@@ -186,10 +205,19 @@ export default function Home() {
     }
   };
 
-  const handleBankrollUpdate = (field: 'starting' | 'goal', value: string) => {
+  const handleBankrollUpdate = async (field: 'starting' | 'goal', value: string) => {
     const newBankroll = { ...bankroll, [field]: value };
     setBankroll(newBankroll);
-    localStorage.setItem('bankroll', JSON.stringify(newBankroll));
+    if (isGuest) {
+      localStorage.setItem('bankroll', JSON.stringify(newBankroll));
+    } else if (user) {
+      // Update in Supabase
+      const updateObj =
+        field === 'starting'
+          ? { starting_bankroll: value === '' ? null : Number(value) }
+          : { bankroll_goal: value === '' ? null : Number(value) };
+      await supabase.from('profiles').update(updateObj).eq('id', user.id);
+    }
   };
 
   // Migrate guest data to Supabase after login
