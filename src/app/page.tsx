@@ -369,7 +369,7 @@ export default function Home() {
                 id="buyIn"
                 value={formData.buyIn}
                 onChange={(e) => setFormData({ ...formData, buyIn: e.target.value })}
-                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 required
               />
             </div>
@@ -383,7 +383,7 @@ export default function Home() {
                 id="cashOut"
                 value={formData.cashOut}
                 onChange={(e) => setFormData({ ...formData, cashOut: e.target.value })}
-                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
           </div>
@@ -478,7 +478,7 @@ export default function Home() {
                   id="startingBankroll"
                   value={bankroll.starting}
                   onChange={(e) => handleBankrollUpdate('starting', e.target.value)}
-                  className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                  className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
               <div>
@@ -490,7 +490,7 @@ export default function Home() {
                   id="bankrollGoal"
                   value={bankroll.goal}
                   onChange={(e) => handleBankrollUpdate('goal', e.target.value)}
-                  className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                  className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
             </div>
