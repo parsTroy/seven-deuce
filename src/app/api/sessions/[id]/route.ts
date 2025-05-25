@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createClient } from '@/utils/supabase/server';
 
-export async function PUT(request: Request, context: { params: { id: string } }) {
-  const { params } = context;
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
     const cookieStore = cookies();
     const supabase = await createClient(cookieStore);
@@ -58,8 +57,7 @@ export async function PUT(request: Request, context: { params: { id: string } })
   }
 }
 
-export async function DELETE(request: Request, context: { params: { id: string } }) {
-  const { params } = context;
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
     const cookieStore = cookies();
     const supabase = await createClient(cookieStore);
