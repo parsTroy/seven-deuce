@@ -665,7 +665,7 @@ export default function Home() {
             <span className="text-lg font-semibold text-blue-700">Add New Session</span>
           </button>
         </div>
-        <div className="order-1 lg:order-2">
+        <div className="order-1 lg:order-2 h-[480px] flex flex-col">
           <Charts sessions={sessions} />
         </div>
       </div>
