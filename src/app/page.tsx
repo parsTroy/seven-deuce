@@ -35,6 +35,8 @@ export default function Home() {
   const [showMigrate, setShowMigrate] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalStatus, setModalStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [editingBankroll, setEditingBankroll] = useState({ starting: '', goal: '' });
+  const [bankrollSaved, setBankrollSaved] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
 
   // Guest mode: load from localStorage
   useEffect(() => {
@@ -205,20 +207,43 @@ export default function Home() {
     }
   };
 
-  const handleBankrollUpdate = async (field: 'starting' | 'goal', value: string) => {
-    const newBankroll = { ...bankroll, [field]: value };
-    setBankroll(newBankroll);
-    if (isGuest) {
-      localStorage.setItem('bankroll', JSON.stringify(newBankroll));
-    } else if (user) {
-      // Update in Supabase
-      const updateObj =
-        field === 'starting'
-          ? { starting_bankroll: value === '' ? null : Number(value) }
-          : { bankroll_goal: value === '' ? null : Number(value) };
-      await supabase.from('profiles').update(updateObj).eq('id', user.id);
+  // Sync editingBankroll with bankroll when bankroll changes
+  useEffect(() => {
+    setEditingBankroll(bankroll);
+  }, [bankroll]);
+
+  const handleBankrollInput = (field: 'starting' | 'goal', value: string) => {
+    setEditingBankroll((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleBankrollUpdateButton = async () => {
+    setBankrollSaved('saving');
+    try {
+      if (isGuest) {
+        localStorage.setItem('bankroll', JSON.stringify(editingBankroll));
+        setBankroll(editingBankroll);
+        setBankrollSaved('success');
+        setTimeout(() => setBankrollSaved('idle'), 1200);
+      } else if (user) {
+        const updateObj = {
+          starting_bankroll: editingBankroll.starting === '' ? null : Number(editingBankroll.starting),
+          bankroll_goal: editingBankroll.goal === '' ? null : Number(editingBankroll.goal),
+        };
+        const { error } = await supabase.from('profiles').update(updateObj).eq('id', user.id);
+        if (!error) {
+          setBankroll(editingBankroll);
+          setBankrollSaved('success');
+          setTimeout(() => setBankrollSaved('idle'), 1200);
+        } else {
+          setBankrollSaved('error');
+        }
+      }
+    } catch {
+      setBankrollSaved('error');
     }
   };
+
+  const isBankrollDirty = editingBankroll.starting !== bankroll.starting || editingBankroll.goal !== bankroll.goal;
 
   // Migrate guest data to Supabase after login
   const handleMigrate = async () => {
@@ -476,8 +501,8 @@ export default function Home() {
                 <input
                   type="number"
                   id="startingBankroll"
-                  value={bankroll.starting}
-                  onChange={(e) => handleBankrollUpdate('starting', e.target.value)}
+                  value={editingBankroll.starting}
+                  onChange={(e) => handleBankrollInput('starting', e.target.value)}
                   className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
@@ -488,42 +513,23 @@ export default function Home() {
                 <input
                   type="number"
                   id="bankrollGoal"
-                  value={bankroll.goal}
-                  onChange={(e) => handleBankrollUpdate('goal', e.target.value)}
+                  value={editingBankroll.goal}
+                  onChange={(e) => handleBankrollInput('goal', e.target.value)}
                   className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
             </div>
-            {/* Progress Bar */}
-            <div className="mt-6">
-              <div className="flex items-end justify-between mb-1">
-                <span className="text-lg font-semibold text-gray-900">
-                  ${bankroll.starting && bankroll.goal ? (Number(bankroll.starting) + (sessions.reduce((sum, s) => sum + (s.profit || 0), 0))).toFixed(2) : '--'}
-                </span>
-                <span className="text-xs text-gray-500">
-                  of ${bankroll.goal || '--'}
-                </span>
-              </div>
-              <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  className="h-3 bg-orange-400 rounded-full transition-all"
-                  style={{
-                    width: bankroll.starting && bankroll.goal
-                      ? `${Math.min(
-                          100,
-                          Math.max(
-                            0,
-                            (
-                              ((Number(bankroll.starting) + sessions.reduce((sum, s) => sum + (s.profit || 0), 0)) - Number(bankroll.starting)) /
-                              (Number(bankroll.goal) - Number(bankroll.starting))
-                            ) * 100
-                          )
-                        )}%`
-                      : '0%'
-                  }}
-                ></div>
-              </div>
-            </div>
+            <button
+              onClick={handleBankrollUpdateButton}
+              disabled={!isBankrollDirty || bankrollSaved === 'saving'}
+              className={`mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors
+                ${!isBankrollDirty || bankrollSaved === 'saving' ? 'opacity-60 cursor-not-allowed' : 'hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'}`}
+              type="button"
+            >
+              {bankrollSaved === 'saving' ? 'Saving...' : 'Update'}
+              {bankrollSaved === 'success' && <CheckCircleIcon className="w-5 h-5 text-green-300" />}
+              {bankrollSaved === 'error' && <span className="text-red-200 ml-2">Error</span>}
+            </button>
           </div>
           <button
             onClick={openModal}
