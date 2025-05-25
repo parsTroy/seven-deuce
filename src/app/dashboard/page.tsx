@@ -650,36 +650,37 @@ export default function Home() {
                 <>
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <span className="block text-sm text-gray-500">Starting Bankroll</span>
+                      <span className="block text-xs text-gray-500">Current Bankroll</span>
                       <span className="text-lg font-semibold text-gray-900">
-                        {isValueSet(bankroll.starting) ? `$${getNumber(bankroll.starting)?.toFixed(2)}` : '--'}
+                        {
+                          isValueSet(bankroll.starting)
+                            ? `$${(((getNumber(bankroll.starting) ?? 0) + (sessions.reduce((sum, s) => sum + (s.profit || 0), 0)))).toFixed(2)}`
+                            : '--'
+                        }
                       </span>
                     </div>
-                    <div>
-                      <span className="block text-sm text-gray-500">Bankroll Goal</span>
-                      <span className="text-lg font-semibold text-gray-900">
-                        {isValueSet(bankroll.goal) ? `$${getNumber(bankroll.goal)?.toFixed(2)}` : '--'}
-                      </span>
-                    </div>
-                    <button
-                      className="ml-4 px-4 py-2 rounded-xl bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 transition-colors"
-                      onClick={() => setIsEditingBankroll(true)}
-                      type="button"
-                    >
-                      Edit
-                    </button>
+                    <span className="text-xs text-gray-500">
+                      of {
+                        isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
+                          ? `$${(getNumber(bankroll.goal) ?? 0).toFixed(2)}`
+                          : '--'
+                      }
+                    </span>
                   </div>
                 </>
               )}
               <div className="mt-6">
                 <div className="flex items-end justify-between mb-1">
-                  <span className="text-lg font-semibold text-gray-900">
-                    {
-                      isValueSet(bankroll.starting) && isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
-                        ? `$${(((getNumber(bankroll.starting) ?? 0) + (sessions.reduce((sum, s) => sum + (s.profit || 0), 0)))).toFixed(2)}`
-                        : '--'
-                    }
-                  </span>
+                  <div>
+                    <span className="block text-xs text-gray-500">Current Bankroll</span>
+                    <span className="text-lg font-semibold text-gray-900">
+                      {
+                        isValueSet(bankroll.starting)
+                          ? `$${(((getNumber(bankroll.starting) ?? 0) + (sessions.reduce((sum, s) => sum + (s.profit || 0), 0)))).toFixed(2)}`
+                          : '--'
+                      }
+                    </span>
+                  </div>
                   <span className="text-xs text-gray-500">
                     of {
                       isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
