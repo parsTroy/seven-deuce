@@ -37,7 +37,7 @@ export default function Modal({ isOpen, onClose, children, footer }: ModalProps)
           </svg>
         </button>
         <div className="flex-1 overflow-y-auto w-full sm:overflow-visible">
-          {children}
+        {children}
         </div>
         {/* Sticky footer for mobile */}
         {footer && (

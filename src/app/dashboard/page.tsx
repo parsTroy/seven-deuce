@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Fragment } from 'react';
 import { Session } from '@/types/session';
 import Statistics from '@/components/Statistics';
 import Charts from '@/components/Charts';
@@ -38,6 +38,7 @@ export default function Home() {
   const [bankrollSaved, setBankrollSaved] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [isEditingBankroll, setIsEditingBankroll] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'sessions'>('overview');
 
   useEffect(() => {
     if (isGuest) {
@@ -396,7 +397,7 @@ export default function Home() {
   }
 
   return (
-    <div className="fixed inset-0 w-screen h-screen overflow-auto" style={{ background: 'radial-gradient(ellipse at center, #26734d 60%, #14532d 100%)' }}>
+    <div className="fixed inset-0 w-screen h-screen overflow-auto bg-gray-50">
       {/* Mobile drawer overlay */}
       <div className={`sm:hidden fixed inset-0 z-50 transition-all duration-300 ${mobileMenuOpen ? 'bg-black/40 pointer-events-auto' : 'pointer-events-none bg-transparent'}`}></div>
       {/* Mobile drawer */}
@@ -425,249 +426,123 @@ export default function Home() {
           </button>
         </div>
       </div>
-      {/* Main content, shift right when drawer open */}
-      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 relative transition-transform duration-300 ${mobileMenuOpen ? 'sm:translate-x-0 translate-x-56' : ''}`} style={{ minHeight: '100vh' }}>
-        {/* Session Modal */}
-        <Modal
-          isOpen={isModalOpen}
-          onClose={closeModal}
-          footer={
-            <div className="flex gap-4 px-2">
-              <button
-                type="submit"
-                form="add-session-form"
-                className="inline-flex justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors w-full"
-                disabled={modalStatus === 'success'}
-              >
-                {editingSession ? 'Update Session' : 'Add Session'}
-              </button>
-              {editingSession && (
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="inline-flex justify-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-200 transition-colors w-full"
-                  disabled={modalStatus === 'success'}
-                >
-                  Cancel
-                </button>
+      {/* Desktop/Tablet UI */}
+      <div className="hidden sm:block w-full h-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+          {/* Gold pill banner header for desktop/tablet only */}
+          <div className="flex items-center justify-between w-full mb-6">
+            <div className="flex-1 flex justify-center">
+              <div className="relative flex items-center gap-2 select-none w-full justify-center" style={{ minHeight: '2rem'}}>
+                <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[260px] h-[2rem] sm:w-[410px] sm:h-[4.2rem] md:w-[420px] md:h-[2.5 rem] rounded-full bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 shadow-lg z-0 border-4 border-yellow-600" style={{ boxShadow: '0 2px 18px 0 #eab30899' }} />
+                <span className="text-lg sm:text-5xl font-extrabold text-red-600 drop-shadow-lg z-10">7<span className="text-xs sm:text-2xl align-super">♥</span></span>
+                <span className="mx-1 text-base sm:text-4xl font-extrabold text-yellow-900 drop-shadow-lg z-10" style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #eab308' }}>/</span>
+                <span className="text-lg sm:text-5xl font-extrabold text-white drop-shadow-lg z-10">2<span className="text-xs sm:text-2xl align-super text-black">♠</span></span>
+                <span className="ml-2 text-lg sm:text-3xl font-bold text-yellow-900 tracking-tight drop-shadow-lg z-10" style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #eab308' }}>Seven Deuce</span>
+              </div>
+            </div>
+            <div className="flex-1 flex justify-end items-center gap-4">
+              {user && (
+                <span className="text-gray-700 text-sm font-medium truncate max-w-[180px]" title={user.email}>{user.email}</span>
               )}
+              <button
+                onClick={handleLogout}
+                className="rounded-xl bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300 transition-colors"
+              >
+                Logout
+              </button>
             </div>
-          }
-        >
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">
-            {editingSession ? 'Edit Session' : 'Add New Session'}
-          </h2>
-          {modalStatus === 'success' && (
-            <div className="flex flex-col items-center justify-center gap-2 mb-4">
-              <CheckCircleIcon className="w-12 h-12 text-green-500" />
-              <span className="text-green-700 font-semibold">Session saved successfully!</span>
-            </div>
-          )}
-          {modalStatus === 'error' && (
-            <div className="flex flex-col items-center justify-center gap-2 mb-4">
-              <XCircleIcon className="w-12 h-12 text-red-500" />
-              <span className="text-red-700 font-semibold">Failed to save session. Please try again.</span>
-            </div>
-          )}
-          <form id="add-session-form" onSubmit={handleSubmit} className="space-y-6 pb-4 sm:pb-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
-                  Date
-                </label>
-                <input
-                  type="date"
-                  id="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="gameType" className="block text-sm font-medium text-gray-700 mb-2">
-                  Game Type
-                </label>
-                <select
-                  id="gameType"
-                  name="gameType"
-                  value={formData.gameType}
-                  onChange={(e) => setFormData({ ...formData, gameType: e.target.value })}
-                  className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
-                >
-                  <option value="cash">Cash Game</option>
-                  <option value="tournament">Tournament</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-                  Location
-                </label>
-                <input
-                  type="text"
-                  name="location"
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="buyIn" className="block text-sm font-medium text-gray-700 mb-2">
-                  Buy In ($)
-                </label>
-                <input
-                  type="number"
-                  name="buyIn"
-                  id="buyIn"
-                  value={formData.buyIn}
-                  onChange={(e) => setFormData({ ...formData, buyIn: e.target.value })}
-                  className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="cashOut" className="block text-sm font-medium text-gray-700 mb-2">
-                  Cash Out ($)
-                </label>
-                <input
-                  type="number"
-                  name="cashOut"
-                  id="cashOut"
-                  value={formData.cashOut}
-                  onChange={(e) => setFormData({ ...formData, cashOut: e.target.value })}
-                  className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
-              </div>
-            </div>
-            <div>
-              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
-                Notes
-              </label>
-              <textarea
-                name="notes"
-                id="notes"
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                rows={3}
-                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
-                placeholder="Add any notes about the session..."
-              />
-            </div>
-          </form>
-        </Modal>
-        {showMigrate && (
-          <div className="bg-yellow-100 border border-yellow-300 rounded-xl p-4 flex items-center justify-between mb-4">
-            <span className="text-yellow-800 font-medium">You have local sessions from guest mode. Migrate them to your account?</span>
-            <button
-              onClick={handleMigrate}
-              className="ml-4 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
-            >
-              Migrate Data
-            </button>
-            <button
-              onClick={() => { localStorage.removeItem('guestSessions'); setShowMigrate(false); }}
-              className="ml-2 px-4 py-2 rounded-xl bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
-            >
-              Dismiss
-            </button>
           </div>
-        )}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 w-full">
-          <div className="flex w-full my-2 sm:my-0">
-            <div className="relative flex items-center gap-2 select-none px-4 py-1 sm:px-8 sm:py-2 rounded-full bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 shadow-lg border-4 border-yellow-600 mx-auto sm:mx-0" style={{ boxShadow: '0 2px 18px 0 #eab30899', minHeight: '2.2rem' }}>
-              <span className="text-lg sm:text-2xl font-extrabold text-red-600 drop-shadow-lg">7<span className="text-xs sm:text-lg align-super">♥</span></span>
-              <span className="mx-1 text-base sm:text-xl font-extrabold text-yellow-900 drop-shadow-lg" style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #eab308' }}>/</span>
-              <span className="text-lg sm:text-2xl font-extrabold text-white drop-shadow-lg">2<span className="text-xs sm:text-lg align-super text-black">♠</span></span>
-              <h1 className="ml-2 text-xl sm:text-3xl font-bold text-yellow-900 tracking-tight drop-shadow-lg" style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #eab308' }}>Seven Deuce</h1>
-            </div>
-            {/* Hamburger menu for mobile */}
-            <button
-              className="sm:hidden ml-2 p-2 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400"
-              onClick={() => setMobileMenuOpen((v) => !v)}
-              aria-label="Open menu"
-              type="button"
-            >
-              <Bars3Icon className="w-7 h-7 text-yellow-900" />
-            </button>
-          </div>
-          <div className="hidden sm:flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
-            {isGuest ? (
-              <span className="text-gray-700 text-sm">Guest Mode</span>
-            ) : (
-              <span className="text-gray-700 text-sm">{user?.email}</span>
-            )}
-            <button
-              onClick={handleLogout}
-              className="rounded-xl bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300 transition-colors w-full sm:w-auto"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-        <Statistics sessions={sessions} />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="flex flex-col gap-6 order-2 lg:order-1 h-full">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 min-h-[180px] flex flex-col justify-between">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Bankroll Management</h2>
-              {isEditingBankroll ? (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label htmlFor="startingBankroll" className="block text-sm font-medium text-gray-700 mb-2">
-                        Starting Bankroll ($)
-                      </label>
-                      <input
-                        type="number"
-                        id="startingBankroll"
-                        value={editingBankroll.starting}
-                        onChange={(e) => handleBankrollInput('starting', e.target.value)}
-                        className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      />
+          {/* Desktop layout: grid with chart, bankroll, sessions, etc. */}
+          <Statistics sessions={sessions} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="flex flex-col gap-6 order-2 lg:order-1 h-full">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 min-h-[180px] flex flex-col justify-between">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">Bankroll Management</h2>
+                {isEditingBankroll ? (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label htmlFor="startingBankroll" className="block text-sm font-medium text-gray-700 mb-2">
+                          Starting Bankroll ($)
+                        </label>
+                        <input
+                          type="number"
+                          id="startingBankroll"
+                          value={editingBankroll.starting}
+                          onChange={(e) => handleBankrollInput('starting', e.target.value)}
+                          className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="bankrollGoal" className="block text-sm font-medium text-gray-700 mb-2">
+                          Bankroll Goal ($)
+                        </label>
+                        <input
+                          type="number"
+                          id="bankrollGoal"
+                          value={editingBankroll.goal}
+                          onChange={(e) => handleBankrollInput('goal', e.target.value)}
+                          className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label htmlFor="bankrollGoal" className="block text-sm font-medium text-gray-700 mb-2">
-                        Bankroll Goal ($)
-                      </label>
-                      <input
-                        type="number"
-                        id="bankrollGoal"
-                        value={editingBankroll.goal}
-                        onChange={(e) => handleBankrollInput('goal', e.target.value)}
-                        className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      />
+                    <div className="flex gap-4 mt-4">
+                      <button
+                        onClick={handleBankrollUpdateButton}
+                        disabled={!isBankrollDirty || bankrollSaved === 'saving'}
+                        className={`flex-1 flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors
+                          ${!isBankrollDirty || bankrollSaved === 'saving' ? 'opacity-60 cursor-not-allowed' : 'hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'}`}
+                        type="button"
+                      >
+                        {bankrollSaved === 'saving' ? 'Saving...' : 'Update'}
+                        {bankrollSaved === 'success' && <CheckCircleIcon className="w-5 h-5 text-green-300" />}
+                        {bankrollSaved === 'error' && <span className="text-red-200 ml-2">Error</span>}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsEditingBankroll(false);
+                          setEditingBankroll(bankroll);
+                        }}
+                        className="flex-1 flex items-center justify-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-200 transition-colors"
+                        type="button"
+                        disabled={bankrollSaved === 'saving'}
+                      >
+                        Cancel
+                      </button>
                     </div>
-                  </div>
-                  <div className="flex gap-4 mt-4">
-                    <button
-                      onClick={handleBankrollUpdateButton}
-                      disabled={!isBankrollDirty || bankrollSaved === 'saving'}
-                      className={`flex-1 flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors
-                        ${!isBankrollDirty || bankrollSaved === 'saving' ? 'opacity-60 cursor-not-allowed' : 'hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'}`}
-                      type="button"
-                    >
-                      {bankrollSaved === 'saving' ? 'Saving...' : 'Update'}
-                      {bankrollSaved === 'success' && <CheckCircleIcon className="w-5 h-5 text-green-300" />}
-                      {bankrollSaved === 'error' && <span className="text-red-200 ml-2">Error</span>}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsEditingBankroll(false);
-                        setEditingBankroll(bankroll);
-                      }}
-                      className="flex-1 flex items-center justify-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-200 transition-colors"
-                      type="button"
-                      disabled={bankrollSaved === 'saving'}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex items-center gap-4 w-full justify-between">
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-4 w-full justify-between">
+                      <div>
+                        <span className="block text-xs text-gray-500">Current Bankroll</span>
+                        <span className="text-lg font-semibold text-gray-900">
+                          {
+                            isValueSet(bankroll.starting)
+                              ? `$${(((getNumber(bankroll.starting) ?? 0) + (sessions.reduce((sum, s) => sum + (s.profit || 0), 0)))).toFixed(2)}`
+                              : '--'
+                          }
+                        </span>
+                        <span className="text-xs text-gray-500 ml-2">
+                          Goal of {
+                            isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
+                              ? `$${(getNumber(bankroll.goal) ?? 0).toFixed(2)}`
+                              : '--'
+                          }
+                        </span>
+                      </div>
+                      <button
+                        className="px-4 py-2 rounded-xl bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 transition-colors"
+                        onClick={() => setIsEditingBankroll(true)}
+                        type="button"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </>
+                )}
+                <div className="mt-6">
+                  <div className="flex items-end justify-between mb-1">
                     <div>
                       <span className="block text-xs text-gray-500">Current Bankroll</span>
                       <span className="text-lg font-semibold text-gray-900">
@@ -677,47 +552,181 @@ export default function Home() {
                             : '--'
                         }
                       </span>
-                      <span className="text-xs text-gray-500 ml-2">
-                        Goal of {
-                          isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
-                            ? `$${(getNumber(bankroll.goal) ?? 0).toFixed(2)}`
-                            : '--'
-                        }
-                      </span>
                     </div>
-                    <button
-                      className="px-4 py-2 rounded-xl bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 transition-colors"
-                      onClick={() => setIsEditingBankroll(true)}
-                      type="button"
-                    >
-                      Edit
-                    </button>
-                  </div>
-                </>
-              )}
-              <div className="mt-6">
-                <div className="flex items-end justify-between mb-1">
-                  <div>
-                    <span className="block text-xs text-gray-500">Current Bankroll</span>
-                    <span className="text-lg font-semibold text-gray-900">
-                      {
-                        isValueSet(bankroll.starting)
-                          ? `$${(((getNumber(bankroll.starting) ?? 0) + (sessions.reduce((sum, s) => sum + (s.profit || 0), 0)))).toFixed(2)}`
+                    <span className="text-xs text-gray-500">
+                      Goal of {
+                        isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
+                          ? `$${(getNumber(bankroll.goal) ?? 0).toFixed(2)}`
                           : '--'
                       }
                     </span>
                   </div>
-                  <span className="text-xs text-gray-500">
-                    Goal of {
-                      isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
-                        ? `$${(getNumber(bankroll.goal) ?? 0).toFixed(2)}`
-                        : '--'
-                    }
-                  </span>
+                  <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-3 bg-orange-400 rounded-full transition-all"
+                      style={{
+                        width:
+                          isValueSet(bankroll.starting) && isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
+                            ? `${Math.min(
+                                100,
+                                Math.max(
+                                  0,
+                                  (
+                                    (((getNumber(bankroll.starting) ?? 0) + sessions.reduce((sum, s) => sum + (s.profit || 0), 0)) - (getNumber(bankroll.starting) ?? 0)) /
+                                    ((getNumber(bankroll.goal) ?? 1) - (getNumber(bankroll.starting) ?? 0))
+                                  ) * 100
+                                )
+                              )}%`
+                            : '0%'
+                      }}
+                    ></div>
+                  </div>
                 </div>
-                <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+              </div>
+              <button
+                onClick={openModal}
+                className="flex flex-col items-center justify-center flex-1 min-h-[100px] max-h-[150px] bg-blue-50 border-2 border-dashed border-blue-300 rounded-2xl shadow-sm hover:bg-blue-100 transition-colors focus:outline-none"
+                aria-label="Add New Session"
+                type="button"
+              >
+                <PlusIcon className="w-8 h-8 text-blue-500 mb-2" />
+                <span className="text-md font-semibold text-blue-700">Add New Session</span>
+              </button>
+            </div>
+            <div className="order-1 lg:order-2 h-[400px] flex flex-col">
+              <Charts sessions={sessions} />
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+            <div className="px-6 py-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">Sessions</h2>
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
+                  <input
+                    type="date"
+                    value={dateRange.start}
+                    onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                    className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition w-full sm:w-auto"
+                  />
+                  <input
+                    type="date"
+                    value={dateRange.end}
+                    onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                    className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition w-full sm:w-auto"
+                  />
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                {filteredSessions.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No sessions recorded yet.</p>
+                ) : (
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead>
+                      <tr>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Buy In</th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cash Out</th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profit</th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {filteredSessions.map((session) => (
+                        <tr key={session.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {new Date(session.date).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {session.gameType === 'cash' ? 'Cash Game' : 'Tournament'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ${session.buyIn}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {session.cashOut ? `$${session.cashOut}` : '-'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span className={`${session.profit && session.profit > 0 ? 'text-green-600' : session.profit && session.profit < 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                              {session.profit ? `$${session.profit}` : '-'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {session.location}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <div className="flex gap-4">
+                              <button
+                                onClick={() => handleEdit(session)}
+                                className="text-blue-600 hover:text-blue-800 transition-colors"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDelete(session.id)}
+                                className="text-red-600 hover:text-red-800 transition-colors"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Mobile UI */}
+      <div className="block sm:hidden w-full h-full bg-[#f7f7fa]">
+        <div className={`w-full max-w-md mx-auto px-2 pt-4 pb-32 space-y-4 relative transition-transform duration-300 ${mobileMenuOpen ? 'sm:translate-x-0 translate-x-56' : ''}`} style={{ minHeight: '100vh' }}>
+          {/* Tab Bar */}
+          <div className="flex w-full justify-center mb-4">
+            <div className="flex bg-gray-100 rounded-full p-1 gap-1 w-full max-w-xs">
+              <button
+                className={`flex-1 px-4 py-2 rounded-full text-sm font-semibold transition-colors ${activeTab === 'overview' ? 'bg-white shadow text-yellow-900' : 'text-gray-500 hover:text-yellow-900'}`}
+                onClick={() => setActiveTab('overview')}
+              >
+                Overview
+              </button>
+              <button
+                className={`flex-1 px-4 py-2 rounded-full text-sm font-semibold transition-colors ${activeTab === 'sessions' ? 'bg-white shadow text-yellow-900' : 'text-gray-500 hover:text-yellow-900'}`}
+                onClick={() => setActiveTab('sessions')}
+              >
+                Sessions
+              </button>
+            </div>
+          </div>
+          {/* Tab Content */}
+          {activeTab === 'overview' && (
+            <Fragment>
+              {/* Main Chart Card */}
+              <div className="w-full bg-white rounded-2xl shadow p-6 mb-4 mt-4">
+                {/* Bankroll and Goal Row */}
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">Current Bankroll</div>
+                    <div className="text-3xl font-bold text-gray-900">
+                      {isValueSet(bankroll.starting)
+                        ? `$${(((getNumber(bankroll.starting) ?? 0) + (sessions.reduce((sum, s) => sum + (s.profit || 0), 0)))).toFixed(2)}`
+                        : '--'}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs text-gray-500 mb-1">Goal</div>
+                    <div className="text-lg font-bold text-gray-700">
+                      {isValueSet(bankroll.goal) ? `$${(getNumber(bankroll.goal) ?? 0).toFixed(2)}` : '--'}
+                    </div>
+                  </div>
+                </div>
+                {/* Progress Bar */}
+                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mb-4">
                   <div
-                    className="h-3 bg-orange-400 rounded-full transition-all"
+                    className="h-2 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full transition-all"
                     style={{
                       width:
                         isValueSet(bankroll.starting) && isValueSet(bankroll.goal) && (getNumber(bankroll.goal) ?? 0) > (getNumber(bankroll.starting) ?? 0)
@@ -735,105 +744,252 @@ export default function Home() {
                     }}
                   ></div>
                 </div>
+                {/* Minimal Chart Card */}
+                <div className="bg-gray-50 rounded-xl p-4 mt-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-base font-semibold text-gray-900">Profit/Loss</div>
+                    {/* Show percent change if available */}
+                    {/* <div className="text-xs font-semibold text-green-500">+5.2%</div> */}
+                  </div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="text-2xl font-bold text-gray-900">
+                      {(() => {
+                        const totalProfit = sessions.reduce((sum, s) => sum + (s.profit || 0), 0);
+                        return isNaN(totalProfit) ? '--' : `$${totalProfit.toFixed(2)}`;
+                      })()}
+                    </div>
+                    {/* Optionally show percent change here if you want */}
+                  </div>
+                  <div className="mt-2">
+                    {/* Minimal chart, hide subtitle/date range, and tabs if possible */}
+                    <Charts sessions={sessions} />
+                  </div>
+                </div>
+                <button
+                  className="mt-6 px-5 py-2 rounded-full bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 transition-colors text-sm w-full"
+                  onClick={() => setIsEditingBankroll(true)}
+                  type="button"
+                >
+                  Edit Bankroll
+                </button>
+                {isEditingBankroll && (
+                  <div className="w-full mt-4 flex flex-col gap-2">
+                    <input
+                      type="number"
+                      value={editingBankroll.starting}
+                      onChange={e => handleBankrollInput('starting', e.target.value)}
+                      className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                      placeholder="Starting Bankroll ($)"
+                    />
+                    <input
+                      type="number"
+                      value={editingBankroll.goal}
+                      onChange={e => handleBankrollInput('goal', e.target.value)}
+                      className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                      placeholder="Bankroll Goal ($)"
+                    />
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={handleBankrollUpdateButton}
+                        disabled={!isBankrollDirty || bankrollSaved === 'saving'}
+                        className={`flex-1 flex items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors
+                          ${!isBankrollDirty || bankrollSaved === 'saving' ? 'opacity-60 cursor-not-allowed' : 'hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'}`}
+                        type="button"
+                      >
+                        {bankrollSaved === 'saving' ? 'Saving...' : 'Update'}
+                        {bankrollSaved === 'success' && <CheckCircleIcon className="w-5 h-5 text-green-300" />}
+                        {bankrollSaved === 'error' && <span className="text-red-200 ml-2">Error</span>}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsEditingBankroll(false);
+                          setEditingBankroll(bankroll);
+                        }}
+                        className="flex-1 flex items-center justify-center rounded-full border border-gray-200 bg-white px-6 py-3 text-base font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-200 transition-colors"
+                        type="button"
+                        disabled={bankrollSaved === 'saving'}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
+            </Fragment>
+          )}
+          {activeTab === 'sessions' && (
+            <div className="w-full flex flex-col gap-4">
+              {filteredSessions.length === 0 ? (
+                <div className="bg-white rounded-2xl shadow p-8 text-center text-gray-400 text-base">No sessions recorded yet.</div>
+              ) : (
+                filteredSessions.map(session => (
+                  <div key={session.id} className="bg-white rounded-2xl shadow p-6 flex flex-col gap-1">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-gray-900">{new Date(session.date).toLocaleDateString()}</span>
+                      <span className={`font-bold ${session.profit && session.profit > 0 ? 'text-green-600' : session.profit && session.profit < 0 ? 'text-red-600' : 'text-gray-700'}`}>{typeof session.profit === 'number' ? `$${session.profit}` : '-'}</span>
+                    </div>
+                    <div className="text-xs text-gray-500">{session.gameType === 'cash' ? 'Cash Game' : 'Tournament'} @ {session.location}</div>
+                    <div className="flex gap-2 mt-2">
+                      <button onClick={() => handleEdit(session)} className="text-blue-600 text-xs font-semibold">Edit</button>
+                      <button onClick={() => handleDelete(session.id)} className="text-red-600 text-xs font-semibold">Delete</button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
+          )}
+          {/* Bottom Nav for mobile */}
+          <nav className="fixed bottom-0 left-0 w-full z-50 bg-white shadow-lg border-t border-gray-200 flex items-center justify-around px-8 py-2 sm:hidden" style={{borderRadius:0}}>
             <button
+              className="p-3 rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open settings menu"
+              type="button"
+            >
+              <Bars3Icon className="w-7 h-7 text-gray-700" />
+            </button>
+            <button
+              className="p-3 rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400"
               onClick={openModal}
-              className="flex flex-col items-center justify-center flex-1 min-h-[100px] max-h-[150px] bg-blue-50 border-2 border-dashed border-blue-300 rounded-2xl shadow-sm hover:bg-blue-100 transition-colors focus:outline-none"
               aria-label="Add New Session"
               type="button"
             >
-              <PlusIcon className="w-8 h-8 text-blue-500 mb-2" />
-              <span className="text-md font-semibold text-blue-700">Add New Session</span>
+              <PlusIcon className="w-7 h-7 text-yellow-500" />
             </button>
-          </div>
-          <div className="order-1 lg:order-2 h-[400px] flex flex-col">
-            <Charts sessions={sessions} />
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-          <div className="px-6 py-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Sessions</h2>
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
-                <input
-                  type="date"
-                  value={dateRange.start}
-                  onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                  className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition w-full sm:w-auto"
-                />
-                <input
-                  type="date"
-                  value={dateRange.end}
-                  onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                  className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition w-full sm:w-auto"
-                />
-              </div>
-            </div>
-            <div className="overflow-x-auto">
-              {filteredSessions.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">No sessions recorded yet.</p>
-              ) : (
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead>
-                    <tr>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Buy In</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cash Out</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profit</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {filteredSessions.map((session) => (
-                      <tr key={session.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {new Date(session.date).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {session.gameType === 'cash' ? 'Cash Game' : 'Tournament'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          ${session.buyIn}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {session.cashOut ? `$${session.cashOut}` : '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <span className={`${session.profit && session.profit > 0 ? 'text-green-600' : session.profit && session.profit < 0 ? 'text-red-600' : 'text-gray-900'}`}>
-                            {session.profit ? `$${session.profit}` : '-'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {session.location}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <div className="flex gap-4">
-                            <button
-                              onClick={() => handleEdit(session)}
-                              className="text-blue-600 hover:text-blue-800 transition-colors"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDelete(session.id)}
-                              className="text-red-600 hover:text-red-800 transition-colors"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          </div>
+          </nav>
         </div>
       </div>
+      {/* Add Session Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        footer={
+          <div className="flex gap-4 px-2">
+            <button
+              type="submit"
+              form="add-session-form"
+              className="inline-flex justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors w-full"
+              disabled={modalStatus === 'success'}
+            >
+              {editingSession ? 'Update Session' : 'Add Session'}
+            </button>
+            {editingSession && (
+              <button
+                type="button"
+                onClick={closeModal}
+                className="inline-flex justify-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-200 transition-colors w-full"
+                disabled={modalStatus === 'success'}
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        }
+      >
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          {editingSession ? 'Edit Session' : 'Add New Session'}
+        </h2>
+        {modalStatus === 'success' && (
+          <div className="flex flex-col items-center justify-center gap-2 mb-4">
+            <CheckCircleIcon className="w-12 h-12 text-green-500" />
+            <span className="text-green-700 font-semibold">Session saved successfully!</span>
+          </div>
+        )}
+        {modalStatus === 'error' && (
+          <div className="flex flex-col items-center justify-center gap-2 mb-4">
+            <XCircleIcon className="w-12 h-12 text-red-500" />
+            <span className="text-red-700 font-semibold">Failed to save session. Please try again.</span>
+          </div>
+        )}
+        <form id="add-session-form" onSubmit={handleSubmit} className="space-y-6 pb-4 sm:pb-0">
+          <div className="grid grid-cols-1 gap-6">
+            <div>
+              <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+                Date
+              </label>
+              <input
+                type="date"
+                id="date"
+                name="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="gameType" className="block text-sm font-medium text-gray-700 mb-2">
+                Game Type
+              </label>
+              <select
+                id="gameType"
+                name="gameType"
+                value={formData.gameType}
+                onChange={(e) => setFormData({ ...formData, gameType: e.target.value })}
+                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+              >
+                <option value="cash">Cash Game</option>
+                <option value="tournament">Tournament</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+                Location
+              </label>
+              <input
+                type="text"
+                name="location"
+                id="location"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="buyIn" className="block text-sm font-medium text-gray-700 mb-2">
+                Buy In ($)
+              </label>
+              <input
+                type="number"
+                name="buyIn"
+                id="buyIn"
+                value={formData.buyIn}
+                onChange={(e) => setFormData({ ...formData, buyIn: e.target.value })}
+                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="cashOut" className="block text-sm font-medium text-gray-700 mb-2">
+                Cash Out ($)
+              </label>
+              <input
+                type="number"
+                name="cashOut"
+                id="cashOut"
+                value={formData.cashOut}
+                onChange={(e) => setFormData({ ...formData, cashOut: e.target.value })}
+                className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
+              Notes
+            </label>
+            <textarea
+              name="notes"
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              rows={3}
+              className="block w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-base text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+              placeholder="Add any notes about the session..."
+            />
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 } 

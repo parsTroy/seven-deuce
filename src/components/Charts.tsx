@@ -119,16 +119,13 @@ export default function Charts({ sessions }: ChartsProps) {
       <div className="bg-white rounded-2xl shadow-md p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2 gap-2">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">{activeTab === 'time' ? 'Profit/Loss Over Time' : 'Profit/Loss by Location'}</h3>
-            <div className="text-xs text-gray-500">{dateRangeLabel}</div>
+            <h3 className="text-lg font-semibold text-gray-900 md:block hidden">{activeTab === 'time' ? 'Profit/Loss Over Time' : 'Profit/Loss by Location'}</h3>
+            <div className="text-xs text-gray-500 md:block hidden">{dateRangeLabel}</div>
           </div>
-          <div className="flex items-center gap-4 mt-2 md:mt-0">
-            <div className="text-2xl font-bold text-gray-900">${totalProfit.toFixed(2)}</div>
-            {percentChange !== null && (
-              <span className={`text-sm font-semibold ${percentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>{percentChange >= 0 ? '+' : ''}{percentChange.toFixed(1)}%</span>
-            )}
-            {/* Tabs */}
-            <div className="ml-4 flex gap-1 bg-gray-100 rounded-lg p-1">
+          {/* Mobile: only chart tab switcher, no profit/loss value or percent change */}
+          <div className="flex flex-col md:flex-row md:items-center md:gap-4 w-full md:w-auto">
+            {/* Mobile tab switcher only */}
+            <div className="flex gap-1 bg-gray-100 rounded-lg p-1 mx-auto md:hidden">
               <button
                 className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeTab === 'time' ? 'bg-white text-blue-700 shadow' : 'text-gray-500 hover:text-blue-700'}`}
                 onClick={() => setActiveTab('time')}
@@ -142,9 +139,31 @@ export default function Charts({ sessions }: ChartsProps) {
                 By Location
               </button>
             </div>
+            {/* Desktop: profit/loss value, percent change, and tab switcher */}
+            <div className="ml-4 flex items-center gap-4 hidden md:flex">
+              <div className="text-2xl font-bold text-gray-900">${totalProfit.toFixed(2)}</div>
+              {percentChange !== null && (
+                <span className={`text-sm font-semibold ${percentChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>{percentChange >= 0 ? '+' : ''}{percentChange.toFixed(1)}%</span>
+              )}
+              <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+                <button
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeTab === 'time' ? 'bg-white text-blue-700 shadow' : 'text-gray-500 hover:text-blue-700'}`}
+                  onClick={() => setActiveTab('time')}
+                >
+                  Over Time
+                </button>
+                <button
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeTab === 'location' ? 'bg-white text-blue-700 shadow' : 'text-gray-500 hover:text-blue-700'}`}
+                  onClick={() => setActiveTab('location')}
+                >
+                  By Location
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="h-[240px] w-full">
+        {/* Responsive chart height: taller on mobile */}
+        <div className="w-full h-[150px] lg:h-[240px]">
           {activeTab === 'time' ? (
             <Line options={chartOptions} data={profitOverTimeData} />
           ) : (
