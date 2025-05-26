@@ -750,15 +750,12 @@ export default function Home() {
                     <div className="text-base font-semibold text-gray-900">Profit/Loss</div>
                     {/* Show percent change if available */}
                     {/* <div className="text-xs font-semibold text-green-500">+5.2%</div> */}
-                  </div>
-                  <div className="flex items-center gap-2 mb-2">
                     <div className="text-2xl font-bold text-gray-900">
                       {(() => {
                         const totalProfit = sessions.reduce((sum, s) => sum + (s.profit || 0), 0);
                         return isNaN(totalProfit) ? '--' : `$${totalProfit.toFixed(2)}`;
                       })()}
                     </div>
-                    {/* Optionally show percent change here if you want */}
                   </div>
                   <div className="mt-2">
                     {/* Minimal chart, hide subtitle/date range, and tabs if possible */}
