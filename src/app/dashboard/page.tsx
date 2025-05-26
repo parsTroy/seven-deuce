@@ -431,13 +431,13 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
           {/* Gold pill banner header for desktop/tablet only */}
           <div className="flex items-center justify-between w-full mb-6">
-            <div className="flex-1 flex justify-center">
-              <div className="relative flex items-center gap-2 select-none w-full justify-center" style={{ minHeight: '2rem'}}>
-                <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[260px] h-[2rem] sm:w-[410px] sm:h-[4.2rem] md:w-[420px] md:h-[2.5 rem] rounded-full bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 shadow-lg z-0 border-4 border-yellow-600" style={{ boxShadow: '0 2px 18px 0 #eab30899' }} />
-                <span className="text-lg sm:text-5xl font-extrabold text-red-600 drop-shadow-lg z-10">7<span className="text-xs sm:text-2xl align-super">♥</span></span>
-                <span className="mx-1 text-base sm:text-4xl font-extrabold text-yellow-900 drop-shadow-lg z-10" style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #eab308' }}>/</span>
-                <span className="text-lg sm:text-5xl font-extrabold text-white drop-shadow-lg z-10">2<span className="text-xs sm:text-2xl align-super text-black">♠</span></span>
-                <span className="ml-2 text-lg sm:text-3xl font-bold text-yellow-900 tracking-tight drop-shadow-lg z-10" style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #eab308' }}>Seven Deuce</span>
+            {/* Title on the left with pill background */}
+            <div className="flex-1 flex items-center">
+              <div className="flex items-center gap-2 select-none px-6 py-2 rounded-full bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 shadow-lg border-4 border-yellow-600" style={{ boxShadow: '0 2px 18px 0 #eab30899', minHeight: '2.5rem', maxWidth: '480px' }}>
+                <span className="text-md sm:text-2xl font-extrabold text-red-600 drop-shadow-lg">7<span className="text-xs sm:text-2xl align-super">♥</span></span>
+                <span className="mx-1 text-base sm:text-2xl font-extrabold text-yellow-900 drop-shadow-lg" style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #eab308' }}>/</span>
+                <span className="text-lg sm:text-2xl font-extrabold text-white drop-shadow-lg">2<span className="text-xs sm:text-2xl align-super text-black">♠</span></span>
+                <span className="ml-2 text-md sm:text-2xl font-bold text-yellow-900 tracking-tight drop-shadow-lg" style={{ textShadow: '0 2px 8px #fff, 0 1px 0 #eab308' }}>Seven Deuce</span>
               </div>
             </div>
             <div className="flex-1 flex justify-end items-center gap-4">
